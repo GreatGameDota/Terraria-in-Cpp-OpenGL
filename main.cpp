@@ -82,6 +82,28 @@ void CleanUp()
 
 void Run()
 {
-    printf("Run game...\n");
-    system("pause");
+    bool gameLoop = true;
+    while (gameLoop)
+    {
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+            {
+                gameLoop = false;
+            }
+            if (event.type == SDL_KEYDOWN)
+            {
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_ESCAPE:
+                    gameLoop = false;
+                    break;
+
+                default:
+                    break;
+                }
+            }
+        }
+    }
 }
