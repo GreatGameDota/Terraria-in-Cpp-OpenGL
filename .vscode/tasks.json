@@ -1,0 +1,76 @@
+{
+    "version": "0.1.0",
+    "command": "g++",
+    "isShellCommand": true,
+    "showOutput": "always",
+    "linux": {
+        "tasks": [
+            {
+                "taskName": "Build",
+                "suppressTaskName": true,
+                "isBuildCommand": true,
+                "args": [
+                    "-g",
+                    "-std=c++11",
+                    "main.cpp",
+                    "-o", "Builds/Linux_Build/engine",
+                    "-lGL",
+                    "-lGLEW",
+                    "-lGLU",
+                    "-lSDL2main",
+                    "-lSDL2",
+                    "-lSDL2_image",
+                    "-lSDL2_ttf"
+                ]
+            }
+        ]
+    },
+    "osx": {
+        "tasks": [
+            {
+                "taskName": "Build",
+                "suppressTaskName": true,
+                "isBuildCommand": true,
+                "args": [
+                    "-g",
+                    "-std=c++11",
+                    "main.cpp",
+                    "-o", "Builds/Mac_Build/engine",
+                    "-lGL",
+                    "-lGLEW",
+                    "-lGLU",
+                    "-lSDL2main",
+                    "-lSDL2",
+                    "-lSDL2_image",
+                    "-lSDL2_ttf"
+                ]
+            }
+        ]
+    },
+    "windows": {
+        "tasks": [
+            {
+                "taskName": "Build",
+                "suppressTaskName": true,
+                "isBuildCommand": true,
+                "args": [
+                    "-g",
+                    "-std=c++11",
+                    "main.cpp",
+                    "-o", "Builds/Win_Build/engine",
+                    "-LDependencies/bin",
+                    "-LBuilds/Win_Build",
+                    "-lmingw32",
+                    "-lopengl32",
+                    "-lglew32",
+                    "-lglew32mx",
+                    "-lglu32",
+                    "-lSDL2main",
+                    "-lSDL2",
+                    "-lSDL2_image",
+                    "-lSDL2_ttf"
+                ]
+            }
+        ]
+    }
+}
