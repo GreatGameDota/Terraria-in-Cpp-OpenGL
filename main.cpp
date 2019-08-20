@@ -5,12 +5,17 @@ bool isRunning = true;
 bool Init();
 void CleanUp();
 void Run();
+SDL_Surface *loadSurface(string path);
+SDL_Surface *gScreenSurface = nullptr;
+SDL_Surface *gPNGSurface = nullptr;
 
-SDL_Window *window;
+SDL_Window *window = nullptr;
 SDL_GLContext glContext;
+unsigned int WindowFlags;
 
 bool Init()
 {
+    WindowFlags = SDL_WINDOW_OPENGL;
     if (SDL_Init(SDL_INIT_NOPARACHUTE & SDL_INIT_EVERYTHING) != 0)
     {
         SDL_Log("Unable to initialize SDL: %s\n", SDL_GetError());
@@ -42,8 +47,20 @@ bool Init()
         return false;
     }
     else
+    {
+        int imgFlags = IMG_INIT_PNG;
+        if (!(IMG_Init(imgFlags) & imgFlags))
+        {
+            printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+            return false;
+        }
+        else
+        {
+            //Get window surface
+            gScreenSurface = SDL_GetWindowSurface(window);
+        }
         SDL_Log("Window Successful Generated");
-
+    }
     //Map OpenGL Context to Window
     glContext = SDL_GL_CreateContext(window);
 
@@ -75,14 +92,30 @@ int WinMain()
 void CleanUp()
 {
     //Free up resources
+    SDL_FreeSurface(gPNGSurface);
+    gPNGSurface = nullptr;
+
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
+    IMG_Quit();
     SDL_Quit();
 }
 
 void Run()
 {
+    gPNGSurface = loadSurface("images/dirt-0000.png");
+    if (gPNGSurface == nullptr)
+    {
+        SDL_Log("Failed to load image surface");
+    }
+    //Apply the PNG image
+    SDL_BlitSurface(gPNGSurface, NULL, gScreenSurface, NULL);
+
+    //Update the surface
+    SDL_UpdateWindowSurface(window);
+
     bool gameLoop = true;
+    bool fullScreen = false;
     while (gameLoop)
     {
         SDL_Event event;
@@ -99,11 +132,37 @@ void Run()
                 case SDLK_ESCAPE:
                     gameLoop = false;
                     break;
-
                 default:
                     break;
                 }
             }
         }
     }
+}
+
+SDL_Surface *loadSurface(std::string path)
+{
+    //The final optimized image
+    SDL_Surface *optimizedSurface = nullptr;
+
+    //Load image at specified path
+    SDL_Surface *loadedSurface = IMG_Load(path.c_str());
+    if (loadedSurface == nullptr)
+    {
+        printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
+    }
+    else
+    {
+        //Convert surface to screen format
+        optimizedSurface = SDL_ConvertSurface(loadedSurface, gScreenSurface->format, 0);
+        if (optimizedSurface == NULL)
+        {
+            printf("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+        }
+
+        //Get rid of old loaded surface
+        SDL_FreeSurface(loadedSurface);
+    }
+
+    return optimizedSurface;
 }
