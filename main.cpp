@@ -2,7 +2,7 @@
 
 bool isRunning = true;
 
-bool Init();
+bool init();
 void CleanUp();
 void Run();
 SDL_Surface *loadSurface(string path);
@@ -13,7 +13,7 @@ SDL_Window *window = nullptr;
 SDL_GLContext glContext;
 unsigned int WindowFlags;
 
-bool Init()
+bool init()
 {
     WindowFlags = SDL_WINDOW_OPENGL;
     if (SDL_Init(SDL_INIT_NOPARACHUTE & SDL_INIT_EVERYTHING) != 0)
@@ -70,7 +70,7 @@ bool Init()
 int WinMain()
 {
     //Error Checking/Initialisation
-    if (!Init())
+    if (!init())
     {
         printf("Failed to Initialize");
         return -1;
@@ -82,6 +82,17 @@ int WinMain()
 
     //Swap Render Buffers
     SDL_GL_SwapWindow(window);
+
+    gPNGSurface = loadSurface("images/dirt-0000.png");
+    if (gPNGSurface == nullptr)
+    {
+        SDL_Log("Failed to load image surface");
+    }
+    //Apply the PNG image
+    SDL_BlitSurface(gPNGSurface, NULL, gScreenSurface, NULL);
+
+    //Update the surface
+    SDL_UpdateWindowSurface(window);
 
     Run();
 
@@ -103,17 +114,6 @@ void CleanUp()
 
 void Run()
 {
-    gPNGSurface = loadSurface("images/dirt-0000.png");
-    if (gPNGSurface == nullptr)
-    {
-        SDL_Log("Failed to load image surface");
-    }
-    //Apply the PNG image
-    SDL_BlitSurface(gPNGSurface, NULL, gScreenSurface, NULL);
-
-    //Update the surface
-    SDL_UpdateWindowSurface(window);
-
     bool gameLoop = true;
     bool fullScreen = false;
     while (gameLoop)
