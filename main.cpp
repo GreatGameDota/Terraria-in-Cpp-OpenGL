@@ -2,13 +2,19 @@
 
 bool isRunning = true;
 
-int WinMain()
+bool Init();
+void CleanUp();
+void Run();
+
+SDL_Window *window;
+SDL_GLContext glContext;
+
+bool Init()
 {
-    //Error Checking/Initialisation
     if (SDL_Init(SDL_INIT_NOPARACHUTE & SDL_INIT_EVERYTHING) != 0)
     {
         SDL_Log("Unable to initialize SDL: %s\n", SDL_GetError());
-        return -1;
+        return false;
     }
     else
     {
@@ -20,7 +26,7 @@ int WinMain()
     }
 
     //Create Window Instance
-    SDL_Window *window = SDL_CreateWindow(
+    window = SDL_CreateWindow(
         "Game Engine",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
@@ -33,23 +39,49 @@ int WinMain()
     {
         //Print error, if null
         printf("Could not create window: %s\n", SDL_GetError());
-        return 1;
+        return false;
     }
     else
         SDL_Log("Window Successful Generated");
 
     //Map OpenGL Context to Window
-    SDL_GLContext glContext = SDL_GL_CreateContext(window);
+    glContext = SDL_GL_CreateContext(window);
 
-    //Render
-    system("pause"); // Uneeded
+    return true;
+}
+
+int WinMain()
+{
+    //Error Checking/Initialisation
+    if (!Init())
+    {
+        printf("Failed to Initialize");
+        return -1;
+    }
+
+    // Clear buffer with black background
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     //Swap Render Buffers
     SDL_GL_SwapWindow(window);
 
+    Run();
+
+    CleanUp();
+    return 0;
+}
+
+void CleanUp()
+{
     //Free up resources
     SDL_GL_DeleteContext(glContext);
+    SDL_DestroyWindow(window);
     SDL_Quit();
+}
 
-    return 0;
+void Run()
+{
+    printf("Run game...\n");
+    system("pause");
 }

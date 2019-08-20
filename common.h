@@ -10,6 +10,7 @@
 #include <vector>
 
 using namespace std;
+// using namespace glm;
 
 /*=======GLU/GLEW=======*/
 
