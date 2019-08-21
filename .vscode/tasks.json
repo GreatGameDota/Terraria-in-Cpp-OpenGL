@@ -57,8 +57,10 @@
                 "isBuildCommand": true,
                 "args": [
                     "-g",
-                    "-std=c++11",
-                    "main.cpp",
+                    "-std=c++17",
+                    "-Wl,--stack,4194304",
+                    "-Wl,--heap,4194304",
+                    "*.cpp",
                     "util/*.cpp",
                     "-o",
                     "Builds/Win_Build/engine",
