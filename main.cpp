@@ -179,5 +179,6 @@ void loadSurface(std::string path)
     }
 
     SDL_Log("Image successfully loaded");
-    images.insert(pair<string, SDL_Surface *>(path, optimizedSurface));
+    auto name = path.substr(7, path.length() - 11);
+    images.insert(pair<string, SDL_Surface *>(name, optimizedSurface));
 }

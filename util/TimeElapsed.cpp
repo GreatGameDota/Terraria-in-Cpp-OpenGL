@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include "../common.h"
+#include <iostream>
 #include "TimeElapsed.h"
 
 inline long long PerformanceCounter() noexcept
@@ -34,5 +34,5 @@ void finish()
   milli = milli - 60000 * min;
   long sec = milli / 1000;
   milli = milli - 1000 * sec;
-  cout << "\nTime elapsed: " << hr << "h:" << min << "m:" << sec << "s:" << milli << "ms" << endl;
+  std::cout << "\nTime elapsed: " << hr << "h:" << min << "m:" << sec << "s:" << milli << "ms" << std::endl;
 }
