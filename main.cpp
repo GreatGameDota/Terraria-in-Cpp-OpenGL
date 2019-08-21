@@ -1,4 +1,5 @@
 #include "common.h"
+#include "./util/TimeElapsed.h"
 
 bool isRunning = true;
 
@@ -69,6 +70,7 @@ bool init()
 
 int WinMain()
 {
+    startTimer();
     //Error Checking/Initialisation
     if (!init())
     {
@@ -84,6 +86,7 @@ int WinMain()
     SDL_GL_SwapWindow(window);
 
     loadSurface("images/dirt-0000.png");
+    loadSurface("images/dirt-x000.png");
 
     for (auto &image : images)
     {
@@ -103,6 +106,9 @@ int WinMain()
     Run();
 
     CleanUp();
+
+    finish();
+    system("pause");
     return 0;
 }
 
