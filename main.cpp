@@ -5,9 +5,9 @@ bool isRunning = true;
 bool init();
 void CleanUp();
 void Run();
-SDL_Surface *loadSurface(string path);
+void loadSurface(string path);
 SDL_Surface *gScreenSurface = nullptr;
-SDL_Surface *gPNGSurface = nullptr;
+map<string, SDL_Surface *> images;
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -83,14 +83,20 @@ int WinMain()
     //Swap Render Buffers
     SDL_GL_SwapWindow(window);
 
-    gPNGSurface = loadSurface("images/dirt-0000.png");
-    if (gPNGSurface == nullptr)
-    {
-        SDL_Log("Failed to load image surface");
-    }
-    //Apply the PNG image
-    SDL_BlitSurface(gPNGSurface, NULL, gScreenSurface, NULL);
+    loadSurface("images/dirt-0000.png");
 
+    for (auto &image : images)
+    {
+        if (image.second != nullptr)
+        {
+            //Apply the PNG image
+            SDL_BlitSurface(image.second, NULL, gScreenSurface, NULL);
+        }
+    }
+    for (auto &image : images)
+    {
+        cout << image.first << " " << image.second << endl;
+    }
     //Update the surface
     SDL_UpdateWindowSurface(window);
 
@@ -103,8 +109,10 @@ int WinMain()
 void CleanUp()
 {
     //Free up resources
-    SDL_FreeSurface(gPNGSurface);
-    gPNGSurface = nullptr;
+    for (auto &image : images)
+    {
+        SDL_FreeSurface(image.second);
+    }
 
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
@@ -140,7 +148,7 @@ void Run()
     }
 }
 
-SDL_Surface *loadSurface(std::string path)
+void loadSurface(std::string path)
 {
     //The final optimized image
     SDL_Surface *optimizedSurface = nullptr;
@@ -164,5 +172,6 @@ SDL_Surface *loadSurface(std::string path)
         SDL_FreeSurface(loadedSurface);
     }
 
-    return optimizedSurface;
+    SDL_Log("Image successfully loaded");
+    images.insert(pair<string, SDL_Surface *>(path, optimizedSurface));
 }
