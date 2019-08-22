@@ -99,6 +99,9 @@ int WinMain()
         SDL_Log("Successfully loaded images");
     }
 
+    Tile t{"grass-0000"};
+    t.render(10, 10, window, gScreenSurface, images);
+
     for (auto &image : images)
     {
         cout << image.first << " " << image.second << endl;

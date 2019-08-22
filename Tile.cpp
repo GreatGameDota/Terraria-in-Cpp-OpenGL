@@ -17,11 +17,11 @@ Tile::~Tile()
 {
 }
 
-void Tile::render(int x, int y, SDL_Window *window, SDL_Surface *gScreenSurface)
+void Tile::render(int x, int y, SDL_Window *window, SDL_Surface *gScreenSurface, map<string, SDL_Surface *> images)
 {
   SDL_Rect pos;
   pos.x = x;
   pos.y = y;
-  // SDL_BlitSurface(img, NULL, gScreenSurface, &pos);
+  SDL_BlitSurface(images[name], NULL, gScreenSurface, &pos);
   SDL_UpdateWindowSurface(window);
 }

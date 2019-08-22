@@ -14,7 +14,7 @@ public:
   Tile(Tile &&t);
   ~Tile();
 
-  void render(int x, int y, SDL_Window *window, SDL_Surface *gScreenSurface);
+  void render(int x, int y, SDL_Window *window, SDL_Surface *gScreenSurface, map<string, SDL_Surface *> images);
 
   // Getters and Setters
   string getName() const { return name; }
