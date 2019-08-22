@@ -22,6 +22,8 @@ void Tile::render(int x, int y, SDL_Window *window, SDL_Surface *gScreenSurface,
   SDL_Rect pos;
   pos.x = x;
   pos.y = y;
+  pos.h = 14;
+  pos.w = 14;
   SDL_BlitSurface(images[name], NULL, gScreenSurface, &pos);
   SDL_UpdateWindowSurface(window);
 }

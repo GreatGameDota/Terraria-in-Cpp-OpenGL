@@ -4,7 +4,9 @@
 
 bool isRunning = true;
 int width = 640;
+int amountX = width / 16;
 int height = 480;
+int amountY = height / 16;
 
 bool init();
 void CleanUp();
@@ -14,6 +16,19 @@ void loadSurface(string path);
 SDL_Surface *gScreenSurface = nullptr;
 vector<Tile> tiles;
 map<string, SDL_Surface *> images;
+
+void InitialWorldGen();
+void RenderAll();
+bool rendering = false;
+vector<string> Ground;
+vector<string> Background;
+vector<float> Light;
+void RenderGroundAtIndex(int idx);
+int *GetScaledXYFromIndex(int idx);
+int GetIndexFromScaledXY(int x, int y);
+int GetIndexFromXY(int x, int y);
+int *GetRealXYFromScaledXY(int x, int y);
+float ScaleNum(float n, float minN, float maxN, float min, float max);
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -35,7 +50,6 @@ bool init()
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_Log("SDL Initialised");
     }
-
     //Create Window Instance
     window = SDL_CreateWindow(
         "Game Engine",
@@ -69,7 +83,6 @@ bool init()
     }
     //Map OpenGL Context to Window
     glContext = SDL_GL_CreateContext(window);
-
     return true;
 }
 
@@ -80,7 +93,7 @@ int WinMain()
     if (!init())
     {
         printf("Failed to Initialize");
-        return -1;
+        // return -1;
     }
 
     // Clear buffer with black background
@@ -99,13 +112,13 @@ int WinMain()
         SDL_Log("Successfully loaded images");
     }
 
-    Tile t{"grass-0000"};
-    t.render(10, 10, window, gScreenSurface, images);
+    InitialWorldGen();
+    RenderAll();
 
-    for (auto &image : images)
-    {
-        cout << image.first << " " << image.second << endl;
-    }
+    // for (auto &image : images)
+    // {
+    //     cout << image.first << " " << image.second << endl;
+    // }
 
     Run();
 
@@ -126,6 +139,69 @@ void CleanUp()
     SDL_DestroyWindow(window);
     IMG_Quit();
     SDL_Quit();
+}
+
+void InitialWorldGen()
+{
+    for (int i = 0; i < amountX * amountY; i++)
+    {
+        tiles.push_back(Tile{});
+        Ground.push_back("dirt-0000");
+        Background.push_back("");
+    }
+}
+
+void RenderAll()
+{
+    rendering = true;
+    cout << amountX << " " << amountY << endl;
+    for (int i = 0; i < Ground.size(); i++)
+    // for (int i = 0; i < 10; i++)
+    {
+        RenderGroundAtIndex(i);
+    }
+    rendering = false;
+}
+
+void RenderGroundAtIndex(int idx)
+{
+    int *scaled = GetScaledXYFromIndex(idx);
+    int *pos = GetRealXYFromScaledXY(*scaled, *(scaled + 1));
+    tiles[idx].setName(Ground[idx]);
+    tiles[idx].render(*pos, *(pos + 1), window, gScreenSurface, images);
+}
+
+int *GetScaledXYFromIndex(int idx)
+{
+    static int returns1[2];
+    returns1[0] = idx % 60;
+    returns1[1] = idx / 60;
+    return returns1;
+}
+
+int GetIndexFromScaledXY(int x, int y)
+{
+    return x + y * amountX;
+}
+
+int GetIndexFromXY(int x, int y)
+{
+    int mouseX = round(ScaleNum((x + width / 2) / width, 0, 1, 0, amountX - 1));
+    int mouseY = round(ScaleNum((x + height / 2) / height, 0, 1, amountY - 1, 0));
+    return GetIndexFromScaledXY(mouseX, mouseY);
+}
+
+int *GetRealXYFromScaledXY(int x, int y)
+{
+    static int returns2[2];
+    returns2[0] = round(ScaleNum(x, 0, amountX - 1, 0, width));
+    returns2[1] = round(ScaleNum(y, 0, amountY - 1, 0, height));
+    return returns2;
+}
+
+float ScaleNum(float n, float minN, float maxN, float min, float max)
+{
+    return (((n - minN) / (maxN - minN)) * (max - min)) + min;
 }
 
 void Run()
