@@ -3,9 +3,9 @@
 #include "Tile.h"
 
 bool isRunning = true;
-int width = 640;
+int width = 1008;
+int height = 608;
 int amountX = width / 16;
-int height = 480;
 int amountY = height / 16;
 
 bool init();
@@ -88,7 +88,7 @@ bool init()
 
 int WinMain()
 {
-    startTimer();
+    // startTimer();
     //Error Checking/Initialisation
     if (!init())
     {
@@ -114,17 +114,19 @@ int WinMain()
 
     InitialWorldGen();
     RenderAll();
-
-    // for (auto &image : images)
-    // {
-    //     cout << image.first << " " << image.second << endl;
-    // }
+    // RenderGroundAtIndex(GetIndexFromScaledXY(amountX, 0));
+    // RenderGroundAtIndex(1);
+    // SDL_Rect pos;
+    // pos.x = width - 16;
+    // pos.y = 0;
+    // SDL_BlitSurface(images["dirt-0000"], NULL, gScreenSurface, &pos);
+    SDL_UpdateWindowSurface(window);
 
     Run();
 
     CleanUp();
 
-    finish();
+    // finish();
     system("pause");
     return 0;
 }
@@ -134,6 +136,7 @@ void CleanUp()
     for (auto &image : images)
     {
         SDL_FreeSurface(image.second);
+        image.second = nullptr;
     }
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
@@ -146,7 +149,7 @@ void InitialWorldGen()
     for (int i = 0; i < amountX * amountY; i++)
     {
         tiles.push_back(Tile{});
-        Ground.push_back("dirt-0000");
+        Ground.push_back("dirt-xxxx1");
         Background.push_back("");
     }
 }
@@ -154,13 +157,13 @@ void InitialWorldGen()
 void RenderAll()
 {
     rendering = true;
-    cout << amountX << " " << amountY << endl;
+    startTimer();
     for (int i = 0; i < Ground.size(); i++)
-    // for (int i = 0; i < 10; i++)
     {
         RenderGroundAtIndex(i);
     }
     rendering = false;
+    finish();
 }
 
 void RenderGroundAtIndex(int idx)
@@ -174,8 +177,8 @@ void RenderGroundAtIndex(int idx)
 int *GetScaledXYFromIndex(int idx)
 {
     static int returns1[2];
-    returns1[0] = idx % 60;
-    returns1[1] = idx / 60;
+    returns1[0] = idx % amountX;
+    returns1[1] = idx / amountX;
     return returns1;
 }
 
@@ -186,16 +189,16 @@ int GetIndexFromScaledXY(int x, int y)
 
 int GetIndexFromXY(int x, int y)
 {
-    int mouseX = round(ScaleNum((x + width / 2) / width, 0, 1, 0, amountX - 1));
-    int mouseY = round(ScaleNum((x + height / 2) / height, 0, 1, amountY - 1, 0));
+    int mouseX = round(ScaleNum(x, 0, width, 1, amountX));
+    int mouseY = round(ScaleNum(y, 0, height, 0, amountY));
     return GetIndexFromScaledXY(mouseX, mouseY);
 }
 
 int *GetRealXYFromScaledXY(int x, int y)
 {
     static int returns2[2];
-    returns2[0] = round(ScaleNum(x, 0, amountX - 1, 0, width));
-    returns2[1] = round(ScaleNum(y, 0, amountY - 1, 0, height));
+    returns2[0] = round(ScaleNum(x, 0, amountX, 0, width));
+    returns2[1] = round(ScaleNum(y, 0, amountY, 0, height));
     return returns2;
 }
 
