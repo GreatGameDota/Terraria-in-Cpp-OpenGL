@@ -1,6 +1,12 @@
 #include "common.h"
 #include "util/TimeElapsed.h"
 #include "Tile.h"
+#include "OpenSimplexNoise.h"
+
+/*
+    Game by GreatGameDota
+    https://github.com/GreatGameDota
+*/
 
 bool isRunning = true;
 int width = 1008;
@@ -29,6 +35,8 @@ int GetIndexFromScaledXY(int x, int y);
 int GetIndexFromXY(int x, int y);
 int *GetRealXYFromScaledXY(int x, int y);
 float ScaleNum(float n, float minN, float maxN, float min, float max);
+
+OpenSimplexNoise noise{};
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -120,6 +128,7 @@ int WinMain()
     // pos.x = width - 16;
     // pos.y = 0;
     // SDL_BlitSurface(images["dirt-0000"], NULL, gScreenSurface, &pos);
+    
     SDL_UpdateWindowSurface(window);
 
     Run();
@@ -189,7 +198,7 @@ int GetIndexFromScaledXY(int x, int y)
 
 int GetIndexFromXY(int x, int y)
 {
-    int mouseX = round(ScaleNum(x, 0, width, 1, amountX));
+    int mouseX = round(ScaleNum(x, 0, width, 0, amountX));
     int mouseY = round(ScaleNum(y, 0, height, 0, amountY));
     return GetIndexFromScaledXY(mouseX, mouseY);
 }

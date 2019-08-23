@@ -5,6 +5,11 @@
         "ctime": "cpp",
         "memory": "cpp",
         "list": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "istream": "cpp",
+        "optional": "cpp",
+        "ostream": "cpp",
+        "system_error": "cpp",
+        "type_traits": "cpp"
     }
 }
