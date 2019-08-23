@@ -6,7 +6,7 @@
 class OpenSimplexNoise
 {
 private:
-  short *perm;
+  short perm[256];
   short permGradIndex3D[256];
 
   double extrapolate(int xsb, int ysb, double dx, double dy);

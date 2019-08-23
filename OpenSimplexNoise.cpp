@@ -398,9 +398,12 @@ OpenSimplexNoise::OpenSimplexNoise() : OpenSimplexNoise(DEFAULT_SEED)
 {
 }
 
-OpenSimplexNoise::OpenSimplexNoise(short p[256])
+OpenSimplexNoise::OpenSimplexNoise(short p[])
 {
-  perm = p;
+  for (int i = 0; i < 256; i++)
+  {
+    perm[i] = p[i];
+  }
 
   for (int i = 0; i < 256; i++)
   {
@@ -414,10 +417,10 @@ OpenSimplexNoise::OpenSimplexNoise(short p[256])
 //Uses a simple 64-bit LCG.
 OpenSimplexNoise::OpenSimplexNoise(long seed)
 {
-  short tempPerm[256];
   short source[256];
   for (short i = 0; i < 256; i++)
     source[i] = i;
+  // random_shuffle(&source[0], &source[256]);
   seed = seed * 6364136223846793005l + 1442695040888963407l;
   seed = seed * 6364136223846793005l + 1442695040888963407l;
   seed = seed * 6364136223846793005l + 1442695040888963407l;
@@ -427,11 +430,10 @@ OpenSimplexNoise::OpenSimplexNoise(long seed)
     int r = (int)((seed + 31) % (i + 1));
     if (r < 0)
       r += (i + 1);
-    tempPerm[i] = source[r];
-    permGradIndex3D[i] = static_cast<short>(((tempPerm[i] % (72 / 3)) * 3));
+    perm[i] = source[r];
+    permGradIndex3D[i] = static_cast<short>(((perm[i] % (72 / 3)) * 3));
     source[r] = source[i];
   }
-  perm = tempPerm;
 }
 
 //2D OpenSimplex Noise.
@@ -631,7 +633,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
     //This depends on the closest two tetrahedral vertices, including (0,0,0)
     double wins = 1 - inSum;
     if (wins > aScore || wins > bScore)
-    {                                               //(0,0,0) is one of the closest two tetrahedral vertices.
+    {                                              //(0,0,0) is one of the closest two tetrahedral vertices.
       int c = (bScore > aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
 
       if ((c & static_cast<int>(0x01)) == 0)
@@ -682,7 +684,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
       }
     }
     else
-    {                                   //(0,0,0) is not one of the closest two tetrahedral vertices.
+    {                                 //(0,0,0) is not one of the closest two tetrahedral vertices.
       int c = (int)(aPoint | bPoint); //Our two extra vertices are determined by the closest two.
 
       if ((c & static_cast<int>(0x01)) == 0)
@@ -792,7 +794,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
     //This depends on the closest two tetrahedral vertices, including (1,1,1)
     double wins = 3 - inSum;
     if (wins < aScore || wins < bScore)
-    {                                               //(1,1,1) is one of the closest two tetrahedral vertices.
+    {                                              //(1,1,1) is one of the closest two tetrahedral vertices.
       int c = (bScore < aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
 
       if ((c & static_cast<int>(0x01)) != 0)
@@ -843,7 +845,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
       }
     }
     else
-    {                                   //(1,1,1) is not one of the closest two tetrahedral vertices.
+    {                                 //(1,1,1) is not one of the closest two tetrahedral vertices.
       int c = (int)(aPoint & bPoint); //Our two extra vertices are determined by the closest two.
 
       if ((c & static_cast<int>(0x01)) != 0)
@@ -1327,7 +1329,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     //This depends on the closest two pentachoron vertices, including (0,0,0,0)
     double uins = 1 - inSum;
     if (uins > aScore || uins > bScore)
-    {                                               //(0,0,0,0) is one of the closest two pentachoron vertices.
+    {                                              //(0,0,0,0) is one of the closest two pentachoron vertices.
       int c = (bScore > aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
       if ((c & static_cast<int>(0x01)) == 0)
       {
@@ -1406,7 +1408,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       }
     }
     else
-    {                                   //(0,0,0,0) is not one of the closest two pentachoron vertices.
+    {                                 //(0,0,0,0) is not one of the closest two pentachoron vertices.
       int c = (int)(aPoint | bPoint); //Our three extra vertices are determined by the closest two.
 
       if ((c & static_cast<int>(0x01)) == 0)
@@ -1574,7 +1576,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     //This depends on the closest two pentachoron vertices, including (0,0,0,0)
     double uins = 4 - inSum;
     if (uins < aScore || uins < bScore)
-    {                                               //(1,1,1,1) is one of the closest two pentachoron vertices.
+    {                                              //(1,1,1,1) is one of the closest two pentachoron vertices.
       int c = (bScore < aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
 
       if ((c & static_cast<int>(0x01)) != 0)
@@ -1654,7 +1656,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       }
     }
     else
-    {                                   //(1,1,1,1) is not one of the closest two pentachoron vertices.
+    {                                 //(1,1,1,1) is not one of the closest two pentachoron vertices.
       int c = (int)(aPoint & bPoint); //Our three extra vertices are determined by the closest two.
 
       if ((c & static_cast<int>(0x01)) != 0)

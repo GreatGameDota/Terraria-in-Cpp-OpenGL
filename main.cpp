@@ -36,7 +36,8 @@ int GetIndexFromXY(int x, int y);
 int *GetRealXYFromScaledXY(int x, int y);
 float ScaleNum(float n, float minN, float maxN, float min, float max);
 
-OpenSimplexNoise noise{};
+OpenSimplexNoise *noise1;
+OpenSimplexNoise *noise2;
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -120,6 +121,16 @@ int WinMain()
         SDL_Log("Successfully loaded images");
     }
 
+    srand(time(NULL));
+
+    long rand1 = rand() * (RAND_MAX + 1) + rand();
+    long rand2 = rand() * (RAND_MAX + 1) + rand();
+    noise1 = new OpenSimplexNoise{rand1};
+    noise2 = new OpenSimplexNoise{rand2};
+
+    printf("%llu\n", rand1);
+    printf("%llu\n", rand2);
+
     InitialWorldGen();
     RenderAll();
     // RenderGroundAtIndex(GetIndexFromScaledXY(amountX, 0));
@@ -128,8 +139,14 @@ int WinMain()
     // pos.x = width - 16;
     // pos.y = 0;
     // SDL_BlitSurface(images["dirt-0000"], NULL, gScreenSurface, &pos);
-    
+
     SDL_UpdateWindowSurface(window);
+
+    for (float i = 0; i < 1; i += .1)
+    {
+        cout << "First: " << (*noise1).eval(i, 0) << endl;
+        cout << "Second: " << (*noise2).eval(i, 0) << endl;
+    }
 
     Run();
 
@@ -147,6 +164,8 @@ void CleanUp()
         SDL_FreeSurface(image.second);
         image.second = nullptr;
     }
+    delete noise1;
+    delete noise2;
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
     IMG_Quit();
