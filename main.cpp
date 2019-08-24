@@ -1,6 +1,5 @@
 #include "common.h"
 #include "util/TimeElapsed.h"
-#include "Tile.h"
 #include "OpenSimplexNoise.h"
 
 /*
@@ -20,9 +19,8 @@ void CleanUp();
 void Run();
 bool loadAllImages();
 void loadSurface(string path);
+void renderImage(double x, double y, string name);
 SDL_Surface *gScreenSurface = nullptr;
-vector<Tile> groundTiles;
-vector<Tile> backgroundTiles;
 map<string, SDL_Surface *> images;
 
 void InitialWorldGen();
@@ -30,12 +28,12 @@ void RenderAll();
 bool rendering = false;
 vector<string> Ground;
 vector<string> Background;
-vector<float> Light;
+vector<double> Light;
 void RenderGroundAtIndex(int idx);
-double *GetScaledXYFromIndex(int idx);
+void GetScaledXYFromIndex(int idx);
 int GetIndexFromScaledXY(double x, double y);
 int GetIndexFromXY(double x, double y);
-double *GetRealXYFromScaledXY(double x, double y);
+void GetRealXYFromScaledXY(double x, double y);
 double ScaleNum(double n, double minN, double maxN, double min, double max);
 
 OpenSimplexNoise *noise1 = nullptr;
@@ -46,13 +44,16 @@ int gen = 0;
 int feature_size = 100;
 int worldXOffset = 0;
 int worldYOffset = 0;
-vector<int> platformX;
-vector<int> platformY;
+vector<double> platformX;
+vector<double> platformY;
 void Generate();
 void GenerateGroundAtIndex(int idx);
-string CheckNeighbors(int x, int y, string type);
+string CheckNeighbors(double x, double y, string type);
 string CheckForEmptyTile(int idx, string type);
-string toString(int n);
+string toString(double n);
+
+double scaled[2];
+double pos[2];
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -148,13 +149,6 @@ int WinMain()
     InitialWorldGen();
     RenderAll();
 
-    // RenderGroundAtIndex(GetIndexFromScaledXY(amountX, 0));
-    // RenderGroundAtIndex(1);
-    // SDL_Rect pos;
-    // pos.x = width - tileSize;
-    // pos.y = 0;
-    // SDL_BlitSurface(images["dirt-0000"], NULL, gScreenSurface, &pos);
-
     SDL_UpdateWindowSurface(window);
 
     Run();
@@ -186,8 +180,6 @@ void InitialWorldGen()
 {
     for (int i = 0; i < amountX * amountY; i++)
     {
-        groundTiles.push_back(Tile{});
-        backgroundTiles.push_back(Tile{});
         Ground.push_back("");
         Background.push_back("");
     }
@@ -215,67 +207,67 @@ void RenderAll()
 
 void RenderGroundAtIndex(int idx)
 {
-    // cout << idx << endl;
-    double *scaled = GetScaledXYFromIndex(idx);
-    double *pos = GetRealXYFromScaledXY(*scaled, *(scaled + 1));
-    // if (Background[idx] != "sky")
-    // {
-    //     string shape = CheckNeighbors(*pos, *(pos + 1), "background");
-    //     if (shape != "xxxx")
-    //     {
-    //         //render sky
-    //     }
-    //     backgroundTiles[idx].setName(Ground[idx] + "-" + shape);
-    //     if (shape == "xxxx")
-    //     {
-    //         backgroundTiles[idx].setName(backgroundTiles[idx].getName() + toString(rand() % 3 + 1));
-    //     }
-    //     if (Ground[idx] == "blank")
-    //     {
-    //         if (shape == "xx0x")
-    //         {
-    //             backgroundTiles[idx].setName(backgroundTiles[idx].getName() + toString(rand() % 2 + 1));
-    //         }
-    //     }
-    // }
-    // else
-    // {
-    //     backgroundTiles[idx].setName("sky");
-    // }
-    // //Brightness
-    // backgroundTiles[idx].render(*pos, *(pos + 1), tileSize, gScreenSurface, images);
+    GetScaledXYFromIndex(idx);
+    GetRealXYFromScaledXY(scaled[0], scaled[1]);
+    if (Background[idx] != "sky")
+    {
+        string name = "";
+        //     string shape = CheckNeighbors(pos[0], pos[1], "background");
+        name = Background[idx] + "-" + "xxxx" + "1";
+        //     if (shape != "xxxx")
+        //     {
+        //         renderImage(pos[0],pos[1],"sky");
+        //     }
+        //     name = Background[idx] + "-" + shape;
+        //     if (shape == "xxxx")
+        //     {
+        //          name += toString(rand() % 3 + 1);
+        //     }
+        //     if (Ground[idx] == "blank")
+        //     {
+        //         if (shape == "xx0x")
+        //         {
+        //             name += toString(rand() % 2 + 1);
+        //         }
+        //     }
+        //Brightness
+        renderImage(pos[0], pos[1], name);
+    }
+    else
+    {
+        renderImage(pos[0], pos[1], "sky");
+    }
     if (Ground[idx] != "blank")
     {
-        // string shape = CheckNeighbors(*pos, *(pos + 1), "ground");
-        // cout << Ground[idx] << "-" << shape << "1" << endl;
-        groundTiles[idx].setName(Ground[idx] + "-" + "xxxx" + "1");
+        string name = "";
+        string shape = CheckNeighbors(pos[0], pos[1], "ground");
+        // cout << Ground[idx] << "-" << shape << endl;
+        name = Ground[idx] + "-" + "xxxx" + "1";
+        // name = Ground[idx] + "-" + shape;
         // if (Ground[idx] == "dirt" || Ground[idx] == "stone")
         // {
         //     if (shape == "xxxx")
         //     {
-        //         groundTiles[idx].setName(groundTiles[idx].getName() + toString(rand() % 3 + 1));
+        //         name += toString(rand() % 3 + 1);
         //     }
         // }
         // if (Ground[idx] == "grass" || Ground[idx] == "stone" || Ground[idx] == "wood")
         // {
         //     if (shape == "xx0x")
         //     {
-        //         groundTiles[idx].setName(groundTiles[idx].getName() + toString(rand() % 3 + 1));
+        //         name += toString(rand() % 3 + 1);
         //     }
         // }
         // if (Ground[idx] == "torch")
         // {
-        //     groundTiles[idx].setName("torch");
+        //     name = "torch";
         // }
-        groundTiles[idx].render(*pos, *(pos + 1), tileSize, gScreenSurface, images);
+        renderImage(pos[0], pos[1], name);
         // if (shape != "xxxx" && Ground[idx] != "torch")
         // {
-        //     platformX.push_back(*pos);
-        //     platformY.push_back(*(pos + 1));
+        //     platformX.push_back(pos[0]);
+        //     platformY.push_back(pos[1];
         // }
-    }
-    else
-    {
     }
 }
 
@@ -289,16 +281,16 @@ void Generate()
 
 void GenerateGroundAtIndex(int idx)
 {
-    double *scal = GetScaledXYFromIndex(idx);
-    double *pos = GetRealXYFromScaledXY(*scal, *(scal + 1));
+    GetScaledXYFromIndex(idx);
+    GetRealXYFromScaledXY(scaled[0], scaled[1]);
     double val = 0;
     if (gen == 0)
     {
-        val = (*noise1).eval(((*pos) - width / 2 + (worldXOffset * tileSize)) / feature_size, ((*(pos + 1)) - height / 2 + (worldYOffset * tileSize)) / feature_size);
+        val = (*noise1).eval((pos[0] - width / 2 + (worldXOffset * tileSize)) / feature_size, (pos[1] - height / 2 + (worldYOffset * tileSize)) / feature_size);
     }
     else if (gen == 1)
     {
-        val = (*noise2).eval(((*pos) - width / 2 + (worldXOffset * tileSize)) / feature_size, ((*(pos + 1)) - height / 2 + (worldYOffset * tileSize)) / feature_size);
+        val = (*noise2).eval((pos[0] - width / 2 + (worldXOffset * tileSize)) / feature_size, (pos[1] - height / 2 + (worldYOffset * tileSize)) / feature_size);
     }
     else
     {
@@ -331,7 +323,7 @@ void GenerateGroundAtIndex(int idx)
     }
 }
 
-string CheckNeighbors(int x, int y, string type)
+string CheckNeighbors(double x, double y, string type)
 {
     string shape = "";
     if (x > 0)
@@ -343,7 +335,7 @@ string CheckNeighbors(int x, int y, string type)
     {
         shape += "x";
     }
-    if (x < amountX + 1)
+    if (x < amountX)
     {
         int idx = GetIndexFromScaledXY(x + 1, y);
         shape += CheckForEmptyTile(idx, type);
@@ -361,7 +353,7 @@ string CheckNeighbors(int x, int y, string type)
     {
         shape += "x";
     }
-    if (y < amountY + 1)
+    if (y < amountY)
     {
         int idx = GetIndexFromScaledXY(x, y + 1);
         shape += CheckForEmptyTile(idx, type);
@@ -403,12 +395,10 @@ string CheckForEmptyTile(int idx, string type)
     }
 }
 
-double *GetScaledXYFromIndex(int idx)
+void GetScaledXYFromIndex(int idx)
 {
-    static double returns1[2];
-    returns1[0] = idx % amountX;
-    returns1[1] = floor(idx / amountX);
-    return returns1;
+    scaled[0] = idx % amountX;
+    scaled[1] = floor(idx / amountX);
 }
 
 int GetIndexFromScaledXY(double x, double y)
@@ -423,12 +413,10 @@ int GetIndexFromXY(double x, double y)
     return GetIndexFromScaledXY(mouseX, mouseY);
 }
 
-double *GetRealXYFromScaledXY(double x, double y)
+void GetRealXYFromScaledXY(double x, double y)
 {
-    static double returns2[2];
-    returns2[0] = round(ScaleNum(x, 0, amountX, 0, width));
-    returns2[1] = round(ScaleNum(y, 0, amountY, 0, height));
-    return returns2;
+    pos[0] = round(ScaleNum(x, 0, amountX, 0, width));
+    pos[1] = round(ScaleNum(y, 0, amountY, 0, height));
 }
 
 double ScaleNum(double n, double minN, double maxN, double min, double max)
@@ -462,6 +450,33 @@ void Run()
             }
         }
     }
+}
+
+void renderImage(double x, double y, string name)
+{
+    SDL_Rect pos;
+    pos.x = x;
+    pos.y = y;
+    // SDL_BlitSurface(images[name], NULL, gScreenSurface, &pos);
+    SDL_Rect size;
+    size.w = tileSize;
+    size.h = tileSize;
+    SDL_Surface *pScaleSurface = SDL_CreateRGBSurface(
+        images[name]->flags,
+        size.w,
+        size.h,
+        images[name]->format->BitsPerPixel,
+        images[name]->format->Rmask,
+        images[name]->format->Gmask,
+        images[name]->format->Bmask,
+        images[name]->format->Amask);
+    SDL_FillRect(pScaleSurface, &size, SDL_MapRGBA(pScaleSurface->format, 255, 0, 0, 255));
+
+    SDL_BlitScaled(images[name], NULL, pScaleSurface, NULL);
+    SDL_BlitSurface(pScaleSurface, NULL, gScreenSurface, &pos);
+
+    SDL_FreeSurface(pScaleSurface);
+    pScaleSurface = nullptr;
 }
 
 void loadSurface(string path)

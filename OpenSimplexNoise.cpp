@@ -1,4 +1,3 @@
-#include <iostream>
 #include "OpenSimplexNoise.h"
 typedef unsigned char BYTE;
 /*
