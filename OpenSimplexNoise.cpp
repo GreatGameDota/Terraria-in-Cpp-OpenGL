@@ -1,5 +1,6 @@
-#include "common.h"
+#include <iostream>
 #include "OpenSimplexNoise.h"
+typedef unsigned char BYTE;
 /*
  * OpenSimplex Noise in Java.
  * by Kurt Spencer
@@ -33,7 +34,7 @@ static const long DEFAULT_SEED{0};
 
 //Gradients for 2D. They approximate the directions to the
 //vertices of an octagon from the center.
-static int gradients2D[16] = {
+int gradients2D[16] = {
     5,
     2,
     2,
@@ -56,7 +57,7 @@ static int gradients2D[16] = {
 //vertices of a rhombicuboctahedron from the center, skewed so
 //that the triangular and square facets can be inscribed inside
 //circles of the same radius.
-static int gradients3D[72] = {
+int gradients3D[72] = {
     -11,
     4,
     4,
@@ -135,7 +136,7 @@ static int gradients3D[72] = {
 //vertices of a disprismatotesseractihexadecachoron from the center,
 //skewed so that the tetrahedral and cubic facets can be inscribed inside
 //spheres of the same radius.
-static int gradients4D[256] = {
+int gradients4D[256] = {
     3,
     1,
     1,
@@ -420,7 +421,6 @@ OpenSimplexNoise::OpenSimplexNoise(long seed)
   short source[256];
   for (short i = 0; i < 256; i++)
     source[i] = i;
-  // random_shuffle(&source[0], &source[256]);
   seed = seed * 6364136223846793005l + 1442695040888963407l;
   seed = seed * 6364136223846793005l + 1442695040888963407l;
   seed = seed * 6364136223846793005l + 1442695040888963407l;
@@ -614,29 +614,29 @@ double OpenSimplexNoise::eval(double x, double y, double z)
   { //We're inside the tetrahedron (3-Simplex) at (0,0,0)
 
     //Determine which two of (0,0,1), (0,1,0), (1,0,0) are closest.
-    int aPoint = static_cast<int>(0x01);
+    BYTE aPoint = static_cast<BYTE>(0x01);
     double aScore = xins;
-    int bPoint = static_cast<int>(0x02);
+    BYTE bPoint = static_cast<BYTE>(0x02);
     double bScore = yins;
     if (aScore >= bScore && zins > bScore)
     {
       bScore = zins;
-      bPoint = static_cast<int>(0x04);
+      bPoint = static_cast<BYTE>(0x04);
     }
     else if (aScore < bScore && zins > aScore)
     {
       aScore = zins;
-      aPoint = static_cast<int>(0x04);
+      aPoint = static_cast<BYTE>(0x04);
     }
 
     //Now we determine the two lattice points not part of the tetrahedron that may contribute.
     //This depends on the closest two tetrahedral vertices, including (0,0,0)
     double wins = 1 - inSum;
     if (wins > aScore || wins > bScore)
-    {                                              //(0,0,0) is one of the closest two tetrahedral vertices.
-      int c = (bScore > aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
+    {                                               //(0,0,0) is one of the closest two tetrahedral vertices.
+      BYTE c = (bScore > aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
 
-      if ((c & static_cast<int>(0x01)) == 0)
+      if ((c & static_cast<BYTE>(0x01)) == 0)
       {
         xsv_ext0 = xsb - 1;
         xsv_ext1 = xsb;
@@ -649,11 +649,11 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         dx_ext0 = dx_ext1 = dx0 - 1;
       }
 
-      if ((c & static_cast<int>(0x02)) == 0)
+      if ((c & static_cast<BYTE>(0x02)) == 0)
       {
         ysv_ext0 = ysv_ext1 = ysb;
         dy_ext0 = dy_ext1 = dy0;
-        if ((c & static_cast<int>(0x01)) == 0)
+        if ((c & static_cast<BYTE>(0x01)) == 0)
         {
           ysv_ext1 -= 1;
           dy_ext1 += 1;
@@ -670,7 +670,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         dy_ext0 = dy_ext1 = dy0 - 1;
       }
 
-      if ((c & static_cast<int>(0x04)) == 0)
+      if ((c & static_cast<BYTE>(0x04)) == 0)
       {
         zsv_ext0 = zsb;
         zsv_ext1 = zsb - 1;
@@ -684,10 +684,10 @@ double OpenSimplexNoise::eval(double x, double y, double z)
       }
     }
     else
-    {                                 //(0,0,0) is not one of the closest two tetrahedral vertices.
-      int c = (int)(aPoint | bPoint); //Our two extra vertices are determined by the closest two.
+    {                                   //(0,0,0) is not one of the closest two tetrahedral vertices.
+      BYTE c = (BYTE)(aPoint | bPoint); //Our two extra vertices are determined by the closest two.
 
-      if ((c & static_cast<int>(0x01)) == 0)
+      if ((c & static_cast<BYTE>(0x01)) == 0)
       {
         xsv_ext0 = xsb;
         xsv_ext1 = xsb - 1;
@@ -701,7 +701,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         dx_ext1 = dx0 - 1 - SQUISH_CONSTANT_3D;
       }
 
-      if ((c & static_cast<int>(0x02)) == 0)
+      if ((c & static_cast<BYTE>(0x02)) == 0)
       {
         ysv_ext0 = ysb;
         ysv_ext1 = ysb - 1;
@@ -715,7 +715,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         dy_ext1 = dy0 - 1 - SQUISH_CONSTANT_3D;
       }
 
-      if ((c & static_cast<int>(0x04)) == 0)
+      if ((c & static_cast<BYTE>(0x04)) == 0)
       {
         zsv_ext0 = zsb;
         zsv_ext1 = zsb - 1;
@@ -775,29 +775,29 @@ double OpenSimplexNoise::eval(double x, double y, double z)
   { //We're inside the tetrahedron (3-Simplex) at (1,1,1)
 
     //Determine which two tetrahedral vertices are the closest, out of (1,1,0), (1,0,1), (0,1,1) but not (1,1,1).
-    int aPoint = static_cast<int>(0x06);
+    BYTE aPoint = static_cast<BYTE>(0x06);
     double aScore = xins;
-    int bPoint = static_cast<int>(0x05);
+    BYTE bPoint = static_cast<BYTE>(0x05);
     double bScore = yins;
     if (aScore <= bScore && zins < bScore)
     {
       bScore = zins;
-      bPoint = static_cast<int>(0x03);
+      bPoint = static_cast<BYTE>(0x03);
     }
     else if (aScore > bScore && zins < aScore)
     {
       aScore = zins;
-      aPoint = static_cast<int>(0x03);
+      aPoint = static_cast<BYTE>(0x03);
     }
 
     //Now we determine the two lattice points not part of the tetrahedron that may contribute.
     //This depends on the closest two tetrahedral vertices, including (1,1,1)
     double wins = 3 - inSum;
     if (wins < aScore || wins < bScore)
-    {                                              //(1,1,1) is one of the closest two tetrahedral vertices.
-      int c = (bScore < aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
+    {                                               //(1,1,1) is one of the closest two tetrahedral vertices.
+      BYTE c = (bScore < aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
 
-      if ((c & static_cast<int>(0x01)) != 0)
+      if ((c & static_cast<BYTE>(0x01)) != 0)
       {
         xsv_ext0 = xsb + 2;
         xsv_ext1 = xsb + 1;
@@ -810,11 +810,11 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         dx_ext0 = dx_ext1 = dx0 - 3 * SQUISH_CONSTANT_3D;
       }
 
-      if ((c & static_cast<int>(0x02)) != 0)
+      if ((c & static_cast<BYTE>(0x02)) != 0)
       {
         ysv_ext0 = ysv_ext1 = ysb + 1;
         dy_ext0 = dy_ext1 = dy0 - 1 - 3 * SQUISH_CONSTANT_3D;
-        if ((c & static_cast<int>(0x01)) != 0)
+        if ((c & static_cast<BYTE>(0x01)) != 0)
         {
           ysv_ext1 += 1;
           dy_ext1 -= 1;
@@ -831,7 +831,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         dy_ext0 = dy_ext1 = dy0 - 3 * SQUISH_CONSTANT_3D;
       }
 
-      if ((c & static_cast<int>(0x04)) != 0)
+      if ((c & static_cast<BYTE>(0x04)) != 0)
       {
         zsv_ext0 = zsb + 1;
         zsv_ext1 = zsb + 2;
@@ -845,10 +845,10 @@ double OpenSimplexNoise::eval(double x, double y, double z)
       }
     }
     else
-    {                                 //(1,1,1) is not one of the closest two tetrahedral vertices.
-      int c = (int)(aPoint & bPoint); //Our two extra vertices are determined by the closest two.
+    {                                   //(1,1,1) is not one of the closest two tetrahedral vertices.
+      BYTE c = (BYTE)(aPoint & bPoint); //Our two extra vertices are determined by the closest two.
 
-      if ((c & static_cast<int>(0x01)) != 0)
+      if ((c & static_cast<BYTE>(0x01)) != 0)
       {
         xsv_ext0 = xsb + 1;
         xsv_ext1 = xsb + 2;
@@ -862,7 +862,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         dx_ext1 = dx0 - 2 * SQUISH_CONSTANT_3D;
       }
 
-      if ((c & static_cast<int>(0x02)) != 0)
+      if ((c & static_cast<BYTE>(0x02)) != 0)
       {
         ysv_ext0 = ysb + 1;
         ysv_ext1 = ysb + 2;
@@ -876,7 +876,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         dy_ext1 = dy0 - 2 * SQUISH_CONSTANT_3D;
       }
 
-      if ((c & static_cast<int>(0x04)) != 0)
+      if ((c & static_cast<BYTE>(0x04)) != 0)
       {
         zsv_ext0 = zsb + 1;
         zsv_ext1 = zsb + 2;
@@ -938,10 +938,10 @@ double OpenSimplexNoise::eval(double x, double y, double z)
   else
   { //We're inside the octahedron (Rectified 3-Simplex) in between.
     double aScore;
-    int aPoint;
+    BYTE aPoint;
     bool aIsFurtherSide;
     double bScore;
-    int bPoint;
+    BYTE bPoint;
     bool bIsFurtherSide;
 
     //Decide between point (0,0,1) and (1,1,0) as closest
@@ -949,13 +949,13 @@ double OpenSimplexNoise::eval(double x, double y, double z)
     if (p1 > 1)
     {
       aScore = p1 - 1;
-      aPoint = static_cast<int>(0x03);
+      aPoint = static_cast<BYTE>(0x03);
       aIsFurtherSide = true;
     }
     else
     {
       aScore = 1 - p1;
-      aPoint = static_cast<int>(0x04);
+      aPoint = static_cast<BYTE>(0x04);
       aIsFurtherSide = false;
     }
 
@@ -964,13 +964,13 @@ double OpenSimplexNoise::eval(double x, double y, double z)
     if (p2 > 1)
     {
       bScore = p2 - 1;
-      bPoint = static_cast<int>(0x05);
+      bPoint = static_cast<BYTE>(0x05);
       bIsFurtherSide = true;
     }
     else
     {
       bScore = 1 - p2;
-      bPoint = static_cast<int>(0x02);
+      bPoint = static_cast<BYTE>(0x02);
       bIsFurtherSide = false;
     }
 
@@ -982,13 +982,13 @@ double OpenSimplexNoise::eval(double x, double y, double z)
       if (aScore <= bScore && aScore < score)
       {
         aScore = score;
-        aPoint = static_cast<int>(0x06);
+        aPoint = static_cast<BYTE>(0x06);
         aIsFurtherSide = true;
       }
       else if (aScore > bScore && bScore < score)
       {
         bScore = score;
-        bPoint = static_cast<int>(0x06);
+        bPoint = static_cast<BYTE>(0x06);
         bIsFurtherSide = true;
       }
     }
@@ -998,13 +998,13 @@ double OpenSimplexNoise::eval(double x, double y, double z)
       if (aScore <= bScore && aScore < score)
       {
         aScore = score;
-        aPoint = static_cast<int>(0x01);
+        aPoint = static_cast<BYTE>(0x01);
         aIsFurtherSide = false;
       }
       else if (aScore > bScore && bScore < score)
       {
         bScore = score;
-        bPoint = static_cast<int>(0x01);
+        bPoint = static_cast<BYTE>(0x01);
         bIsFurtherSide = false;
       }
     }
@@ -1024,8 +1024,8 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         zsv_ext0 = zsb + 1;
 
         //Other extra point is based on the shared axis.
-        int c = (int)(aPoint & bPoint);
-        if ((c & static_cast<int>(0x01)) != 0)
+        BYTE c = (BYTE)(aPoint & bPoint);
+        if ((c & static_cast<BYTE>(0x01)) != 0)
         {
           dx_ext1 = dx0 - 2 - 2 * SQUISH_CONSTANT_3D;
           dy_ext1 = dy0 - 2 * SQUISH_CONSTANT_3D;
@@ -1034,7 +1034,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
           ysv_ext1 = ysb;
           zsv_ext1 = zsb;
         }
-        else if ((c & static_cast<int>(0x02)) != 0)
+        else if ((c & static_cast<BYTE>(0x02)) != 0)
         {
           dx_ext1 = dx0 - 2 * SQUISH_CONSTANT_3D;
           dy_ext1 = dy0 - 2 - 2 * SQUISH_CONSTANT_3D;
@@ -1065,8 +1065,8 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         zsv_ext0 = zsb;
 
         //Other extra point is based on the omitted axis.
-        int c = (int)(aPoint | bPoint);
-        if ((c & static_cast<int>(0x01)) == 0)
+        BYTE c = (BYTE)(aPoint | bPoint);
+        if ((c & static_cast<BYTE>(0x01)) == 0)
         {
           dx_ext1 = dx0 + 1 - SQUISH_CONSTANT_3D;
           dy_ext1 = dy0 - 1 - SQUISH_CONSTANT_3D;
@@ -1075,7 +1075,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
           ysv_ext1 = ysb + 1;
           zsv_ext1 = zsb + 1;
         }
-        else if ((c & static_cast<int>(0x02)) == 0)
+        else if ((c & static_cast<BYTE>(0x02)) == 0)
         {
           dx_ext1 = dx0 - 1 - SQUISH_CONSTANT_3D;
           dy_ext1 = dy0 + 1 - SQUISH_CONSTANT_3D;
@@ -1097,7 +1097,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
     }
     else
     { //One point on (0,0,0) side, one point on (1,1,1) side
-      int c1, c2;
+      BYTE c1, c2;
       if (aIsFurtherSide)
       {
         c1 = aPoint;
@@ -1110,7 +1110,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
       }
 
       //One contribution is a permutation of (1,1,-1)
-      if ((c1 & static_cast<int>(0x01)) == 0)
+      if ((c1 & static_cast<BYTE>(0x01)) == 0)
       {
         dx_ext0 = dx0 + 1 - SQUISH_CONSTANT_3D;
         dy_ext0 = dy0 - 1 - SQUISH_CONSTANT_3D;
@@ -1119,7 +1119,7 @@ double OpenSimplexNoise::eval(double x, double y, double z)
         ysv_ext0 = ysb + 1;
         zsv_ext0 = zsb + 1;
       }
-      else if ((c1 & static_cast<int>(0x02)) == 0)
+      else if ((c1 & static_cast<BYTE>(0x02)) == 0)
       {
         dx_ext0 = dx0 - 1 - SQUISH_CONSTANT_3D;
         dy_ext0 = dy0 + 1 - SQUISH_CONSTANT_3D;
@@ -1145,12 +1145,12 @@ double OpenSimplexNoise::eval(double x, double y, double z)
       xsv_ext1 = xsb;
       ysv_ext1 = ysb;
       zsv_ext1 = zsb;
-      if ((c2 & static_cast<int>(0x01)) != 0)
+      if ((c2 & static_cast<BYTE>(0x01)) != 0)
       {
         dx_ext1 -= 2;
         xsv_ext1 += 2;
       }
-      else if ((c2 & static_cast<int>(0x02)) != 0)
+      else if ((c2 & static_cast<BYTE>(0x02)) != 0)
       {
         dy_ext1 -= 2;
         ysv_ext1 += 2;
@@ -1300,38 +1300,38 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
   { //We're inside the pentachoron (4-Simplex) at (0,0,0,0)
 
     //Determine which two of (0,0,0,1), (0,0,1,0), (0,1,0,0), (1,0,0,0) are closest.
-    int aPoint = static_cast<int>(0x01);
+    BYTE aPoint = static_cast<BYTE>(0x01);
     double aScore = xins;
-    int bPoint = static_cast<int>(0x02);
+    BYTE bPoint = static_cast<BYTE>(0x02);
     double bScore = yins;
     if (aScore >= bScore && zins > bScore)
     {
       bScore = zins;
-      bPoint = static_cast<int>(0x04);
+      bPoint = static_cast<BYTE>(0x04);
     }
     else if (aScore < bScore && zins > aScore)
     {
       aScore = zins;
-      aPoint = static_cast<int>(0x04);
+      aPoint = static_cast<BYTE>(0x04);
     }
     if (aScore >= bScore && wins > bScore)
     {
       bScore = wins;
-      bPoint = static_cast<int>(0x08);
+      bPoint = static_cast<BYTE>(0x08);
     }
     else if (aScore < bScore && wins > aScore)
     {
       aScore = wins;
-      aPoint = static_cast<int>(0x08);
+      aPoint = static_cast<BYTE>(0x08);
     }
 
     //Now we determine the three lattice points not part of the pentachoron that may contribute.
     //This depends on the closest two pentachoron vertices, including (0,0,0,0)
     double uins = 1 - inSum;
     if (uins > aScore || uins > bScore)
-    {                                              //(0,0,0,0) is one of the closest two pentachoron vertices.
-      int c = (bScore > aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
-      if ((c & static_cast<int>(0x01)) == 0)
+    {                                               //(0,0,0,0) is one of the closest two pentachoron vertices.
+      BYTE c = (bScore > aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
+      if ((c & static_cast<BYTE>(0x01)) == 0)
       {
         xsv_ext0 = xsb - 1;
         xsv_ext1 = xsv_ext2 = xsb;
@@ -1344,11 +1344,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dx_ext0 = dx_ext1 = dx_ext2 = dx0 - 1;
       }
 
-      if ((c & static_cast<int>(0x02)) == 0)
+      if ((c & static_cast<BYTE>(0x02)) == 0)
       {
         ysv_ext0 = ysv_ext1 = ysv_ext2 = ysb;
         dy_ext0 = dy_ext1 = dy_ext2 = dy0;
-        if ((c & static_cast<int>(0x01)) == static_cast<int>(0x01))
+        if ((c & static_cast<BYTE>(0x01)) == static_cast<BYTE>(0x01))
         {
           ysv_ext0 -= 1;
           dy_ext0 += 1;
@@ -1365,13 +1365,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dy_ext0 = dy_ext1 = dy_ext2 = dy0 - 1;
       }
 
-      if ((c & static_cast<int>(0x04)) == 0)
+      if ((c & static_cast<BYTE>(0x04)) == 0)
       {
         zsv_ext0 = zsv_ext1 = zsv_ext2 = zsb;
         dz_ext0 = dz_ext1 = dz_ext2 = dz0;
-        if ((c & static_cast<int>(0x03)) != 0)
+        if ((c & static_cast<BYTE>(0x03)) != 0)
         {
-          if ((c & static_cast<int>(0x03)) == static_cast<int>(0x03))
+          if ((c & static_cast<BYTE>(0x03)) == static_cast<BYTE>(0x03))
           {
             zsv_ext0 -= 1;
             dz_ext0 += 1;
@@ -1394,7 +1394,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dz_ext0 = dz_ext1 = dz_ext2 = dz0 - 1;
       }
 
-      if ((c & static_cast<int>(0x08)) == 0)
+      if ((c & static_cast<BYTE>(0x08)) == 0)
       {
         wsv_ext0 = wsv_ext1 = wsb;
         wsv_ext2 = wsb - 1;
@@ -1408,10 +1408,10 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       }
     }
     else
-    {                                 //(0,0,0,0) is not one of the closest two pentachoron vertices.
-      int c = (int)(aPoint | bPoint); //Our three extra vertices are determined by the closest two.
+    {                                   //(0,0,0,0) is not one of the closest two pentachoron vertices.
+      BYTE c = (BYTE)(aPoint | bPoint); //Our three extra vertices are determined by the closest two.
 
-      if ((c & static_cast<int>(0x01)) == 0)
+      if ((c & static_cast<BYTE>(0x01)) == 0)
       {
         xsv_ext0 = xsv_ext2 = xsb;
         xsv_ext1 = xsb - 1;
@@ -1426,12 +1426,12 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dx_ext1 = dx_ext2 = dx0 - 1 - SQUISH_CONSTANT_4D;
       }
 
-      if ((c & static_cast<int>(0x02)) == 0)
+      if ((c & static_cast<BYTE>(0x02)) == 0)
       {
         ysv_ext0 = ysv_ext1 = ysv_ext2 = ysb;
         dy_ext0 = dy0 - 2 * SQUISH_CONSTANT_4D;
         dy_ext1 = dy_ext2 = dy0 - SQUISH_CONSTANT_4D;
-        if ((c & static_cast<int>(0x01)) == static_cast<int>(0x01))
+        if ((c & static_cast<BYTE>(0x01)) == static_cast<BYTE>(0x01))
         {
           ysv_ext1 -= 1;
           dy_ext1 += 1;
@@ -1449,12 +1449,12 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dy_ext1 = dy_ext2 = dy0 - 1 - SQUISH_CONSTANT_4D;
       }
 
-      if ((c & static_cast<int>(0x04)) == 0)
+      if ((c & static_cast<BYTE>(0x04)) == 0)
       {
         zsv_ext0 = zsv_ext1 = zsv_ext2 = zsb;
         dz_ext0 = dz0 - 2 * SQUISH_CONSTANT_4D;
         dz_ext1 = dz_ext2 = dz0 - SQUISH_CONSTANT_4D;
-        if ((c & static_cast<int>(0x03)) == static_cast<int>(0x03))
+        if ((c & static_cast<BYTE>(0x03)) == static_cast<BYTE>(0x03))
         {
           zsv_ext1 -= 1;
           dz_ext1 += 1;
@@ -1472,7 +1472,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dz_ext1 = dz_ext2 = dz0 - 1 - SQUISH_CONSTANT_4D;
       }
 
-      if ((c & static_cast<int>(0x08)) == 0)
+      if ((c & static_cast<BYTE>(0x08)) == 0)
       {
         wsv_ext0 = wsv_ext1 = wsb;
         wsv_ext2 = wsb - 1;
@@ -1547,39 +1547,39 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
   else if (inSum >= 3)
   { //We're inside the pentachoron (4-Simplex) at (1,1,1,1)
     //Determine which two of (1,1,1,0), (1,1,0,1), (1,0,1,1), (0,1,1,1) are closest.
-    int aPoint = static_cast<int>(0x0e);
+    BYTE aPoint = static_cast<BYTE>(0x0e);
     double aScore = xins;
-    int bPoint = static_cast<int>(0x0d);
+    BYTE bPoint = static_cast<BYTE>(0x0d);
     double bScore = yins;
     if (aScore <= bScore && zins < bScore)
     {
       bScore = zins;
-      bPoint = static_cast<int>(0x0b);
+      bPoint = static_cast<BYTE>(0x0b);
     }
     else if (aScore > bScore && zins < aScore)
     {
       aScore = zins;
-      aPoint = static_cast<int>(0x0b);
+      aPoint = static_cast<BYTE>(0x0b);
     }
     if (aScore <= bScore && wins < bScore)
     {
       bScore = wins;
-      bPoint = static_cast<int>(0x07);
+      bPoint = static_cast<BYTE>(0x07);
     }
     else if (aScore > bScore && wins < aScore)
     {
       aScore = wins;
-      aPoint = static_cast<int>(0x07);
+      aPoint = static_cast<BYTE>(0x07);
     }
 
     //Now we determine the three lattice points not part of the pentachoron that may contribute.
     //This depends on the closest two pentachoron vertices, including (0,0,0,0)
     double uins = 4 - inSum;
     if (uins < aScore || uins < bScore)
-    {                                              //(1,1,1,1) is one of the closest two pentachoron vertices.
-      int c = (bScore < aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
+    {                                               //(1,1,1,1) is one of the closest two pentachoron vertices.
+      BYTE c = (bScore < aScore ? bPoint : aPoint); //Our other closest vertex is the closest out of a and b.
 
-      if ((c & static_cast<int>(0x01)) != 0)
+      if ((c & static_cast<BYTE>(0x01)) != 0)
       {
         xsv_ext0 = xsb + 2;
         xsv_ext1 = xsv_ext2 = xsb + 1;
@@ -1592,11 +1592,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dx_ext0 = dx_ext1 = dx_ext2 = dx0 - 4 * SQUISH_CONSTANT_4D;
       }
 
-      if ((c & static_cast<int>(0x02)) != 0)
+      if ((c & static_cast<BYTE>(0x02)) != 0)
       {
         ysv_ext0 = ysv_ext1 = ysv_ext2 = ysb + 1;
         dy_ext0 = dy_ext1 = dy_ext2 = dy0 - 1 - 4 * SQUISH_CONSTANT_4D;
-        if ((c & static_cast<int>(0x01)) != 0)
+        if ((c & static_cast<BYTE>(0x01)) != 0)
         {
           ysv_ext1 += 1;
           dy_ext1 -= 1;
@@ -1613,13 +1613,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dy_ext0 = dy_ext1 = dy_ext2 = dy0 - 4 * SQUISH_CONSTANT_4D;
       }
 
-      if ((c & static_cast<int>(0x04)) != 0)
+      if ((c & static_cast<BYTE>(0x04)) != 0)
       {
         zsv_ext0 = zsv_ext1 = zsv_ext2 = zsb + 1;
         dz_ext0 = dz_ext1 = dz_ext2 = dz0 - 1 - 4 * SQUISH_CONSTANT_4D;
-        if ((c & static_cast<int>(0x03)) != static_cast<int>(0x03))
+        if ((c & static_cast<BYTE>(0x03)) != static_cast<BYTE>(0x03))
         {
-          if ((c & static_cast<int>(0x03)) == 0)
+          if ((c & static_cast<BYTE>(0x03)) == 0)
           {
             zsv_ext0 += 1;
             dz_ext0 -= 1;
@@ -1642,7 +1642,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dz_ext0 = dz_ext1 = dz_ext2 = dz0 - 4 * SQUISH_CONSTANT_4D;
       }
 
-      if ((c & static_cast<int>(0x08)) != 0)
+      if ((c & static_cast<BYTE>(0x08)) != 0)
       {
         wsv_ext0 = wsv_ext1 = wsb + 1;
         wsv_ext2 = wsb + 2;
@@ -1656,10 +1656,10 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       }
     }
     else
-    {                                 //(1,1,1,1) is not one of the closest two pentachoron vertices.
-      int c = (int)(aPoint & bPoint); //Our three extra vertices are determined by the closest two.
+    {                                   //(1,1,1,1) is not one of the closest two pentachoron vertices.
+      BYTE c = (BYTE)(aPoint & bPoint); //Our three extra vertices are determined by the closest two.
 
-      if ((c & static_cast<int>(0x01)) != 0)
+      if ((c & static_cast<BYTE>(0x01)) != 0)
       {
         xsv_ext0 = xsv_ext2 = xsb + 1;
         xsv_ext1 = xsb + 2;
@@ -1674,12 +1674,12 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dx_ext1 = dx_ext2 = dx0 - 3 * SQUISH_CONSTANT_4D;
       }
 
-      if ((c & static_cast<int>(0x02)) != 0)
+      if ((c & static_cast<BYTE>(0x02)) != 0)
       {
         ysv_ext0 = ysv_ext1 = ysv_ext2 = ysb + 1;
         dy_ext0 = dy0 - 1 - 2 * SQUISH_CONSTANT_4D;
         dy_ext1 = dy_ext2 = dy0 - 1 - 3 * SQUISH_CONSTANT_4D;
-        if ((c & static_cast<int>(0x01)) != 0)
+        if ((c & static_cast<BYTE>(0x01)) != 0)
         {
           ysv_ext2 += 1;
           dy_ext2 -= 1;
@@ -1697,12 +1697,12 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dy_ext1 = dy_ext2 = dy0 - 3 * SQUISH_CONSTANT_4D;
       }
 
-      if ((c & static_cast<int>(0x04)) != 0)
+      if ((c & static_cast<BYTE>(0x04)) != 0)
       {
         zsv_ext0 = zsv_ext1 = zsv_ext2 = zsb + 1;
         dz_ext0 = dz0 - 1 - 2 * SQUISH_CONSTANT_4D;
         dz_ext1 = dz_ext2 = dz0 - 1 - 3 * SQUISH_CONSTANT_4D;
-        if ((c & static_cast<int>(0x03)) != 0)
+        if ((c & static_cast<BYTE>(0x03)) != 0)
         {
           zsv_ext2 += 1;
           dz_ext2 -= 1;
@@ -1720,7 +1720,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dz_ext1 = dz_ext2 = dz0 - 3 * SQUISH_CONSTANT_4D;
       }
 
-      if ((c & static_cast<int>(0x08)) != 0)
+      if ((c & static_cast<BYTE>(0x08)) != 0)
       {
         wsv_ext0 = wsv_ext1 = wsb + 1;
         wsv_ext2 = wsb + 2;
@@ -1799,34 +1799,34 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
   else if (inSum <= 2)
   { //We're inside the first dispentachoron (Rectified 4-Simplex)
     double aScore;
-    int aPoint;
+    BYTE aPoint;
     bool aIsBiggerSide = true;
     double bScore;
-    int bPoint;
+    BYTE bPoint;
     bool bIsBiggerSide = true;
 
     //Decide between (1,1,0,0) and (0,0,1,1)
     if (xins + yins > zins + wins)
     {
       aScore = xins + yins;
-      aPoint = static_cast<int>(0x03);
+      aPoint = static_cast<BYTE>(0x03);
     }
     else
     {
       aScore = zins + wins;
-      aPoint = static_cast<int>(0x0c);
+      aPoint = static_cast<BYTE>(0x0c);
     }
 
     //Decide between (1,0,1,0) and (0,1,0,1)
     if (xins + zins > yins + wins)
     {
       bScore = xins + zins;
-      bPoint = static_cast<int>(0x05);
+      bPoint = static_cast<BYTE>(0x05);
     }
     else
     {
       bScore = yins + wins;
-      bPoint = static_cast<int>(0x0a);
+      bPoint = static_cast<BYTE>(0x0a);
     }
 
     //Closer between (1,0,0,1) and (0,1,1,0) will replace the further of a and b, if closer.
@@ -1836,12 +1836,12 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       if (aScore >= bScore && score > bScore)
       {
         bScore = score;
-        bPoint = static_cast<int>(0x09);
+        bPoint = static_cast<BYTE>(0x09);
       }
       else if (aScore < bScore && score > aScore)
       {
         aScore = score;
-        aPoint = static_cast<int>(0x09);
+        aPoint = static_cast<BYTE>(0x09);
       }
     }
     else
@@ -1850,12 +1850,12 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       if (aScore >= bScore && score > bScore)
       {
         bScore = score;
-        bPoint = static_cast<int>(0x06);
+        bPoint = static_cast<BYTE>(0x06);
       }
       else if (aScore < bScore && score > aScore)
       {
         aScore = score;
-        aPoint = static_cast<int>(0x06);
+        aPoint = static_cast<BYTE>(0x06);
       }
     }
 
@@ -1864,13 +1864,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     if (aScore >= bScore && p1 > bScore)
     {
       bScore = p1;
-      bPoint = static_cast<int>(0x01);
+      bPoint = static_cast<BYTE>(0x01);
       bIsBiggerSide = false;
     }
     else if (aScore < bScore && p1 > aScore)
     {
       aScore = p1;
-      aPoint = static_cast<int>(0x01);
+      aPoint = static_cast<BYTE>(0x01);
       aIsBiggerSide = false;
     }
 
@@ -1879,13 +1879,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     if (aScore >= bScore && p2 > bScore)
     {
       bScore = p2;
-      bPoint = static_cast<int>(0x02);
+      bPoint = static_cast<BYTE>(0x02);
       bIsBiggerSide = false;
     }
     else if (aScore < bScore && p2 > aScore)
     {
       aScore = p2;
-      aPoint = static_cast<int>(0x02);
+      aPoint = static_cast<BYTE>(0x02);
       aIsBiggerSide = false;
     }
 
@@ -1894,13 +1894,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     if (aScore >= bScore && p3 > bScore)
     {
       bScore = p3;
-      bPoint = static_cast<int>(0x04);
+      bPoint = static_cast<BYTE>(0x04);
       bIsBiggerSide = false;
     }
     else if (aScore < bScore && p3 > aScore)
     {
       aScore = p3;
-      aPoint = static_cast<int>(0x04);
+      aPoint = static_cast<BYTE>(0x04);
       aIsBiggerSide = false;
     }
 
@@ -1909,13 +1909,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     if (aScore >= bScore && p4 > bScore)
     {
       bScore = p4;
-      bPoint = static_cast<int>(0x08);
+      bPoint = static_cast<BYTE>(0x08);
       bIsBiggerSide = false;
     }
     else if (aScore < bScore && p4 > aScore)
     {
       aScore = p4;
-      aPoint = static_cast<int>(0x08);
+      aPoint = static_cast<BYTE>(0x08);
       aIsBiggerSide = false;
     }
 
@@ -1924,9 +1924,9 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     {
       if (aIsBiggerSide)
       { //Both closest points on the bigger side
-        int c1 = (int)(aPoint | bPoint);
-        int c2 = (int)(aPoint & bPoint);
-        if ((c1 & static_cast<int>(0x01)) == 0)
+        BYTE c1 = (BYTE)(aPoint | bPoint);
+        BYTE c2 = (BYTE)(aPoint & bPoint);
+        if ((c1 & static_cast<BYTE>(0x01)) == 0)
         {
           xsv_ext0 = xsb;
           xsv_ext1 = xsb - 1;
@@ -1940,7 +1940,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
           dx_ext1 = dx0 - 1 - 2 * SQUISH_CONSTANT_4D;
         }
 
-        if ((c1 & static_cast<int>(0x02)) == 0)
+        if ((c1 & static_cast<BYTE>(0x02)) == 0)
         {
           ysv_ext0 = ysb;
           ysv_ext1 = ysb - 1;
@@ -1954,7 +1954,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
           dy_ext1 = dy0 - 1 - 2 * SQUISH_CONSTANT_4D;
         }
 
-        if ((c1 & static_cast<int>(0x04)) == 0)
+        if ((c1 & static_cast<BYTE>(0x04)) == 0)
         {
           zsv_ext0 = zsb;
           zsv_ext1 = zsb - 1;
@@ -1968,7 +1968,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
           dz_ext1 = dz0 - 1 - 2 * SQUISH_CONSTANT_4D;
         }
 
-        if ((c1 & static_cast<int>(0x08)) == 0)
+        if ((c1 & static_cast<BYTE>(0x08)) == 0)
         {
           wsv_ext0 = wsb;
           wsv_ext1 = wsb - 1;
@@ -1991,17 +1991,17 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dy_ext2 = dy0 - 2 * SQUISH_CONSTANT_4D;
         dz_ext2 = dz0 - 2 * SQUISH_CONSTANT_4D;
         dw_ext2 = dw0 - 2 * SQUISH_CONSTANT_4D;
-        if ((c2 & static_cast<int>(0x01)) != 0)
+        if ((c2 & static_cast<BYTE>(0x01)) != 0)
         {
           xsv_ext2 += 2;
           dx_ext2 -= 2;
         }
-        else if ((c2 & static_cast<int>(0x02)) != 0)
+        else if ((c2 & static_cast<BYTE>(0x02)) != 0)
         {
           ysv_ext2 += 2;
           dy_ext2 -= 2;
         }
-        else if ((c2 & static_cast<int>(0x04)) != 0)
+        else if ((c2 & static_cast<BYTE>(0x04)) != 0)
         {
           zsv_ext2 += 2;
           dz_ext2 -= 2;
@@ -2025,9 +2025,9 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dw_ext2 = dw0;
 
         //Other two points are based on the omitted axes.
-        int c = (int)(aPoint | bPoint);
+        BYTE c = (BYTE)(aPoint | bPoint);
 
-        if ((c & static_cast<int>(0x01)) == 0)
+        if ((c & static_cast<BYTE>(0x01)) == 0)
         {
           xsv_ext0 = xsb - 1;
           xsv_ext1 = xsb;
@@ -2040,11 +2040,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
           dx_ext0 = dx_ext1 = dx0 - 1 - SQUISH_CONSTANT_4D;
         }
 
-        if ((c & static_cast<int>(0x02)) == 0)
+        if ((c & static_cast<BYTE>(0x02)) == 0)
         {
           ysv_ext0 = ysv_ext1 = ysb;
           dy_ext0 = dy_ext1 = dy0 - SQUISH_CONSTANT_4D;
-          if ((c & static_cast<int>(0x01)) == static_cast<int>(0x01))
+          if ((c & static_cast<BYTE>(0x01)) == static_cast<BYTE>(0x01))
           {
             ysv_ext0 -= 1;
             dy_ext0 += 1;
@@ -2061,11 +2061,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
           dy_ext0 = dy_ext1 = dy0 - 1 - SQUISH_CONSTANT_4D;
         }
 
-        if ((c & static_cast<int>(0x04)) == 0)
+        if ((c & static_cast<BYTE>(0x04)) == 0)
         {
           zsv_ext0 = zsv_ext1 = zsb;
           dz_ext0 = dz_ext1 = dz0 - SQUISH_CONSTANT_4D;
-          if ((c & static_cast<int>(0x03)) == static_cast<int>(0x03))
+          if ((c & static_cast<BYTE>(0x03)) == static_cast<BYTE>(0x03))
           {
             zsv_ext0 -= 1;
             dz_ext0 += 1;
@@ -2082,7 +2082,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
           dz_ext0 = dz_ext1 = dz0 - 1 - SQUISH_CONSTANT_4D;
         }
 
-        if ((c & static_cast<int>(0x08)) == 0)
+        if ((c & static_cast<BYTE>(0x08)) == 0)
         {
           wsv_ext0 = wsb;
           wsv_ext1 = wsb - 1;
@@ -2098,7 +2098,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     }
     else
     { //One point on each "side"
-      int c1, c2;
+      BYTE c1, c2;
       if (aIsBiggerSide)
       {
         c1 = aPoint;
@@ -2111,7 +2111,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       }
 
       //Two contributions are the bigger-sided point with each 0 replaced with -1.
-      if ((c1 & static_cast<int>(0x01)) == 0)
+      if ((c1 & static_cast<BYTE>(0x01)) == 0)
       {
         xsv_ext0 = xsb - 1;
         xsv_ext1 = xsb;
@@ -2124,11 +2124,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dx_ext0 = dx_ext1 = dx0 - 1 - SQUISH_CONSTANT_4D;
       }
 
-      if ((c1 & static_cast<int>(0x02)) == 0)
+      if ((c1 & static_cast<BYTE>(0x02)) == 0)
       {
         ysv_ext0 = ysv_ext1 = ysb;
         dy_ext0 = dy_ext1 = dy0 - SQUISH_CONSTANT_4D;
-        if ((c1 & static_cast<int>(0x01)) == static_cast<int>(0x01))
+        if ((c1 & static_cast<BYTE>(0x01)) == static_cast<BYTE>(0x01))
         {
           ysv_ext0 -= 1;
           dy_ext0 += 1;
@@ -2145,11 +2145,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dy_ext0 = dy_ext1 = dy0 - 1 - SQUISH_CONSTANT_4D;
       }
 
-      if ((c1 & static_cast<int>(0x04)) == 0)
+      if ((c1 & static_cast<BYTE>(0x04)) == 0)
       {
         zsv_ext0 = zsv_ext1 = zsb;
         dz_ext0 = dz_ext1 = dz0 - SQUISH_CONSTANT_4D;
-        if ((c1 & static_cast<int>(0x03)) == static_cast<int>(0x03))
+        if ((c1 & static_cast<BYTE>(0x03)) == static_cast<BYTE>(0x03))
         {
           zsv_ext0 -= 1;
           dz_ext0 += 1;
@@ -2166,7 +2166,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dz_ext0 = dz_ext1 = dz0 - 1 - SQUISH_CONSTANT_4D;
       }
 
-      if ((c1 & static_cast<int>(0x08)) == 0)
+      if ((c1 & static_cast<BYTE>(0x08)) == 0)
       {
         wsv_ext0 = wsb;
         wsv_ext1 = wsb - 1;
@@ -2188,17 +2188,17 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       dy_ext2 = dy0 - 2 * SQUISH_CONSTANT_4D;
       dz_ext2 = dz0 - 2 * SQUISH_CONSTANT_4D;
       dw_ext2 = dw0 - 2 * SQUISH_CONSTANT_4D;
-      if ((c2 & static_cast<int>(0x01)) != 0)
+      if ((c2 & static_cast<BYTE>(0x01)) != 0)
       {
         xsv_ext2 += 2;
         dx_ext2 -= 2;
       }
-      else if ((c2 & static_cast<int>(0x02)) != 0)
+      else if ((c2 & static_cast<BYTE>(0x02)) != 0)
       {
         ysv_ext2 += 2;
         dy_ext2 -= 2;
       }
-      else if ((c2 & static_cast<int>(0x04)) != 0)
+      else if ((c2 & static_cast<BYTE>(0x04)) != 0)
       {
         zsv_ext2 += 2;
         dz_ext2 -= 2;
@@ -2333,34 +2333,34 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
   else
   { //We're inside the second dispentachoron (Rectified 4-Simplex)
     double aScore;
-    int aPoint;
+    BYTE aPoint;
     bool aIsBiggerSide = true;
     double bScore;
-    int bPoint;
+    BYTE bPoint;
     bool bIsBiggerSide = true;
 
     //Decide between (0,0,1,1) and (1,1,0,0)
     if (xins + yins < zins + wins)
     {
       aScore = xins + yins;
-      aPoint = static_cast<int>(0x0c);
+      aPoint = static_cast<BYTE>(0x0c);
     }
     else
     {
       aScore = zins + wins;
-      aPoint = static_cast<int>(0x03);
+      aPoint = static_cast<BYTE>(0x03);
     }
 
     //Decide between (0,1,0,1) and (1,0,1,0)
     if (xins + zins < yins + wins)
     {
       bScore = xins + zins;
-      bPoint = static_cast<int>(0x0a);
+      bPoint = static_cast<BYTE>(0x0a);
     }
     else
     {
       bScore = yins + wins;
-      bPoint = static_cast<int>(0x05);
+      bPoint = static_cast<BYTE>(0x05);
     }
 
     //Closer between (0,1,1,0) and (1,0,0,1) will replace the further of a and b, if closer.
@@ -2370,12 +2370,12 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       if (aScore <= bScore && score < bScore)
       {
         bScore = score;
-        bPoint = static_cast<int>(0x06);
+        bPoint = static_cast<BYTE>(0x06);
       }
       else if (aScore > bScore && score < aScore)
       {
         aScore = score;
-        aPoint = static_cast<int>(0x06);
+        aPoint = static_cast<BYTE>(0x06);
       }
     }
     else
@@ -2384,12 +2384,12 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       if (aScore <= bScore && score < bScore)
       {
         bScore = score;
-        bPoint = static_cast<int>(0x09);
+        bPoint = static_cast<BYTE>(0x09);
       }
       else if (aScore > bScore && score < aScore)
       {
         aScore = score;
-        aPoint = static_cast<int>(0x09);
+        aPoint = static_cast<BYTE>(0x09);
       }
     }
 
@@ -2398,13 +2398,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     if (aScore <= bScore && p1 < bScore)
     {
       bScore = p1;
-      bPoint = static_cast<int>(0x0e);
+      bPoint = static_cast<BYTE>(0x0e);
       bIsBiggerSide = false;
     }
     else if (aScore > bScore && p1 < aScore)
     {
       aScore = p1;
-      aPoint = static_cast<int>(0x0e);
+      aPoint = static_cast<BYTE>(0x0e);
       aIsBiggerSide = false;
     }
 
@@ -2413,13 +2413,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     if (aScore <= bScore && p2 < bScore)
     {
       bScore = p2;
-      bPoint = static_cast<int>(0x0d);
+      bPoint = static_cast<BYTE>(0x0d);
       bIsBiggerSide = false;
     }
     else if (aScore > bScore && p2 < aScore)
     {
       aScore = p2;
-      aPoint = static_cast<int>(0x0d);
+      aPoint = static_cast<BYTE>(0x0d);
       aIsBiggerSide = false;
     }
 
@@ -2428,13 +2428,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     if (aScore <= bScore && p3 < bScore)
     {
       bScore = p3;
-      bPoint = static_cast<int>(0x0b);
+      bPoint = static_cast<BYTE>(0x0b);
       bIsBiggerSide = false;
     }
     else if (aScore > bScore && p3 < aScore)
     {
       aScore = p3;
-      aPoint = static_cast<int>(0x0b);
+      aPoint = static_cast<BYTE>(0x0b);
       aIsBiggerSide = false;
     }
 
@@ -2443,13 +2443,13 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     if (aScore <= bScore && p4 < bScore)
     {
       bScore = p4;
-      bPoint = static_cast<int>(0x07);
+      bPoint = static_cast<BYTE>(0x07);
       bIsBiggerSide = false;
     }
     else if (aScore > bScore && p4 < aScore)
     {
       aScore = p4;
-      aPoint = static_cast<int>(0x07);
+      aPoint = static_cast<BYTE>(0x07);
       aIsBiggerSide = false;
     }
 
@@ -2458,8 +2458,8 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     {
       if (aIsBiggerSide)
       { //Both closest points on the bigger side
-        int c1 = (int)(aPoint & bPoint);
-        int c2 = (int)(aPoint | bPoint);
+        BYTE c1 = (BYTE)(aPoint & bPoint);
+        BYTE c2 = (BYTE)(aPoint | bPoint);
 
         //Two contributions are permutations of (0,0,0,1) and (0,0,0,2) based on c1
         xsv_ext0 = xsv_ext1 = xsb;
@@ -2474,21 +2474,21 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dy_ext1 = dy0 - 2 * SQUISH_CONSTANT_4D;
         dz_ext1 = dz0 - 2 * SQUISH_CONSTANT_4D;
         dw_ext1 = dw0 - 2 * SQUISH_CONSTANT_4D;
-        if ((c1 & static_cast<int>(0x01)) != 0)
+        if ((c1 & static_cast<BYTE>(0x01)) != 0)
         {
           xsv_ext0 += 1;
           dx_ext0 -= 1;
           xsv_ext1 += 2;
           dx_ext1 -= 2;
         }
-        else if ((c1 & static_cast<int>(0x02)) != 0)
+        else if ((c1 & static_cast<BYTE>(0x02)) != 0)
         {
           ysv_ext0 += 1;
           dy_ext0 -= 1;
           ysv_ext1 += 2;
           dy_ext1 -= 2;
         }
-        else if ((c1 & static_cast<int>(0x04)) != 0)
+        else if ((c1 & static_cast<BYTE>(0x04)) != 0)
         {
           zsv_ext0 += 1;
           dz_ext0 -= 1;
@@ -2512,17 +2512,17 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dy_ext2 = dy0 - 1 - 2 * SQUISH_CONSTANT_4D;
         dz_ext2 = dz0 - 1 - 2 * SQUISH_CONSTANT_4D;
         dw_ext2 = dw0 - 1 - 2 * SQUISH_CONSTANT_4D;
-        if ((c2 & static_cast<int>(0x01)) == 0)
+        if ((c2 & static_cast<BYTE>(0x01)) == 0)
         {
           xsv_ext2 -= 2;
           dx_ext2 += 2;
         }
-        else if ((c2 & static_cast<int>(0x02)) == 0)
+        else if ((c2 & static_cast<BYTE>(0x02)) == 0)
         {
           ysv_ext2 -= 2;
           dy_ext2 += 2;
         }
-        else if ((c2 & static_cast<int>(0x04)) == 0)
+        else if ((c2 & static_cast<BYTE>(0x04)) == 0)
         {
           zsv_ext2 -= 2;
           dz_ext2 += 2;
@@ -2546,9 +2546,9 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dw_ext2 = dw0 - 1 - 4 * SQUISH_CONSTANT_4D;
 
         //Other two points are based on the shared axes.
-        int c = (int)(aPoint & bPoint);
+        BYTE c = (BYTE)(aPoint & bPoint);
 
-        if ((c & static_cast<int>(0x01)) != 0)
+        if ((c & static_cast<BYTE>(0x01)) != 0)
         {
           xsv_ext0 = xsb + 2;
           xsv_ext1 = xsb + 1;
@@ -2561,11 +2561,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
           dx_ext0 = dx_ext1 = dx0 - 3 * SQUISH_CONSTANT_4D;
         }
 
-        if ((c & static_cast<int>(0x02)) != 0)
+        if ((c & static_cast<BYTE>(0x02)) != 0)
         {
           ysv_ext0 = ysv_ext1 = ysb + 1;
           dy_ext0 = dy_ext1 = dy0 - 1 - 3 * SQUISH_CONSTANT_4D;
-          if ((c & static_cast<int>(0x01)) == 0)
+          if ((c & static_cast<BYTE>(0x01)) == 0)
           {
             ysv_ext0 += 1;
             dy_ext0 -= 1;
@@ -2582,11 +2582,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
           dy_ext0 = dy_ext1 = dy0 - 3 * SQUISH_CONSTANT_4D;
         }
 
-        if ((c & static_cast<int>(0x04)) != 0)
+        if ((c & static_cast<BYTE>(0x04)) != 0)
         {
           zsv_ext0 = zsv_ext1 = zsb + 1;
           dz_ext0 = dz_ext1 = dz0 - 1 - 3 * SQUISH_CONSTANT_4D;
-          if ((c & static_cast<int>(0x03)) == 0)
+          if ((c & static_cast<BYTE>(0x03)) == 0)
           {
             zsv_ext0 += 1;
             dz_ext0 -= 1;
@@ -2603,7 +2603,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
           dz_ext0 = dz_ext1 = dz0 - 3 * SQUISH_CONSTANT_4D;
         }
 
-        if ((c & static_cast<int>(0x08)) != 0)
+        if ((c & static_cast<BYTE>(0x08)) != 0)
         {
           wsv_ext0 = wsb + 1;
           wsv_ext1 = wsb + 2;
@@ -2619,7 +2619,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
     }
     else
     { //One point on each "side"
-      int c1, c2;
+      BYTE c1, c2;
       if (aIsBiggerSide)
       {
         c1 = aPoint;
@@ -2632,7 +2632,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       }
 
       //Two contributions are the bigger-sided point with each 1 replaced with 2.
-      if ((c1 & static_cast<int>(0x01)) != 0)
+      if ((c1 & static_cast<BYTE>(0x01)) != 0)
       {
         xsv_ext0 = xsb + 2;
         xsv_ext1 = xsb + 1;
@@ -2645,11 +2645,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dx_ext0 = dx_ext1 = dx0 - 3 * SQUISH_CONSTANT_4D;
       }
 
-      if ((c1 & static_cast<int>(0x02)) != 0)
+      if ((c1 & static_cast<BYTE>(0x02)) != 0)
       {
         ysv_ext0 = ysv_ext1 = ysb + 1;
         dy_ext0 = dy_ext1 = dy0 - 1 - 3 * SQUISH_CONSTANT_4D;
-        if ((c1 & static_cast<int>(0x01)) == 0)
+        if ((c1 & static_cast<BYTE>(0x01)) == 0)
         {
           ysv_ext0 += 1;
           dy_ext0 -= 1;
@@ -2666,11 +2666,11 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dy_ext0 = dy_ext1 = dy0 - 3 * SQUISH_CONSTANT_4D;
       }
 
-      if ((c1 & static_cast<int>(0x04)) != 0)
+      if ((c1 & static_cast<BYTE>(0x04)) != 0)
       {
         zsv_ext0 = zsv_ext1 = zsb + 1;
         dz_ext0 = dz_ext1 = dz0 - 1 - 3 * SQUISH_CONSTANT_4D;
-        if ((c1 & static_cast<int>(0x03)) == 0)
+        if ((c1 & static_cast<BYTE>(0x03)) == 0)
         {
           zsv_ext0 += 1;
           dz_ext0 -= 1;
@@ -2687,7 +2687,7 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
         dz_ext0 = dz_ext1 = dz0 - 3 * SQUISH_CONSTANT_4D;
       }
 
-      if ((c1 & static_cast<int>(0x08)) != 0)
+      if ((c1 & static_cast<BYTE>(0x08)) != 0)
       {
         wsv_ext0 = wsb + 1;
         wsv_ext1 = wsb + 2;
@@ -2709,17 +2709,17 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
       dy_ext2 = dy0 - 1 - 2 * SQUISH_CONSTANT_4D;
       dz_ext2 = dz0 - 1 - 2 * SQUISH_CONSTANT_4D;
       dw_ext2 = dw0 - 1 - 2 * SQUISH_CONSTANT_4D;
-      if ((c2 & static_cast<int>(0x01)) == 0)
+      if ((c2 & static_cast<BYTE>(0x01)) == 0)
       {
         xsv_ext2 -= 2;
         dx_ext2 += 2;
       }
-      else if ((c2 & static_cast<int>(0x02)) == 0)
+      else if ((c2 & static_cast<BYTE>(0x02)) == 0)
       {
         ysv_ext2 -= 2;
         dy_ext2 += 2;
       }
-      else if ((c2 & static_cast<int>(0x04)) == 0)
+      else if ((c2 & static_cast<BYTE>(0x04)) == 0)
       {
         zsv_ext2 -= 2;
         dz_ext2 += 2;
@@ -2881,24 +2881,24 @@ double OpenSimplexNoise::eval(double x, double y, double z, double w)
 
 double OpenSimplexNoise::extrapolate(int xsb, int ysb, double dx, double dy)
 {
-  int index = perm[(perm[xsb & static_cast<int>(0xff)] + ysb) & static_cast<int>(0xff)] & static_cast<int>(0x0e);
+  int index = perm[(perm[xsb & 0xff] + ysb) & 0xff] & 0x0e;
   return gradients2D[index] * dx + gradients2D[index + 1] * dy;
 }
 
 double OpenSimplexNoise::extrapolate(int xsb, int ysb, int zsb, double dx, double dy, double dz)
 {
-  int index = permGradIndex3D[(perm[(perm[xsb & static_cast<int>(0xff)] + ysb) & static_cast<int>(0xff)] + zsb) & static_cast<int>(0xff)];
+  int index = permGradIndex3D[(perm[(perm[xsb & 0xff] + ysb) & 0xff] + zsb) & 0xff];
   return gradients3D[index] * dx + gradients3D[index + 1] * dy + gradients3D[index + 2] * dz;
 }
 
 double OpenSimplexNoise::extrapolate(int xsb, int ysb, int zsb, int wsb, double dx, double dy, double dz, double dw)
 {
-  int index = perm[(perm[(perm[(perm[xsb & static_cast<int>(0xff)] + ysb) & static_cast<int>(0xff)] + zsb) & static_cast<int>(0xff)] + wsb) & static_cast<int>(0xff)] & static_cast<int>(0xfc);
+  int index = perm[(perm[(perm[(perm[xsb & 0xff] + ysb) & 0xff] + zsb) & 0xff] + wsb) & 0xff] & 0xfc;
   return gradients4D[index] * dx + gradients4D[index + 1] * dy + gradients4D[index + 2] * dz + gradients4D[index + 3] * dw;
 }
 
 int OpenSimplexNoise::fastFloor(double x)
 {
-  int xi = (int)x;
+  int xi = static_cast<int>(x);
   return x < xi ? xi - 1 : xi;
 }

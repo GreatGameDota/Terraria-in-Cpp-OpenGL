@@ -32,11 +32,11 @@ vector<string> Ground;
 vector<string> Background;
 vector<float> Light;
 void RenderGroundAtIndex(int idx);
-int *GetScaledXYFromIndex(int idx);
-int GetIndexFromScaledXY(int x, int y);
-int GetIndexFromXY(int x, int y);
-int *GetRealXYFromScaledXY(int x, int y);
-float ScaleNum(float n, float minN, float maxN, float min, float max);
+double *GetScaledXYFromIndex(int idx);
+int GetIndexFromScaledXY(double x, double y);
+int GetIndexFromXY(double x, double y);
+double *GetRealXYFromScaledXY(double x, double y);
+double ScaleNum(double n, double minN, double maxN, double min, double max);
 
 OpenSimplexNoise *noise1 = nullptr;
 OpenSimplexNoise *noise2 = nullptr;
@@ -216,8 +216,8 @@ void RenderAll()
 void RenderGroundAtIndex(int idx)
 {
     // cout << idx << endl;
-    int *scaled = GetScaledXYFromIndex(idx);
-    int *pos = GetRealXYFromScaledXY(*scaled, *(scaled + 1));
+    double *scaled = GetScaledXYFromIndex(idx);
+    double *pos = GetRealXYFromScaledXY(*scaled, *(scaled + 1));
     // if (Background[idx] != "sky")
     // {
     //     string shape = CheckNeighbors(*pos, *(pos + 1), "background");
@@ -289,16 +289,16 @@ void Generate()
 
 void GenerateGroundAtIndex(int idx)
 {
-    int *scal = GetScaledXYFromIndex(idx);
-    int *pos = GetRealXYFromScaledXY(*scal, *(scal + 1));
+    double *scal = GetScaledXYFromIndex(idx);
+    double *pos = GetRealXYFromScaledXY(*scal, *(scal + 1));
     double val = 0;
     if (gen == 0)
     {
-        val = (*noise1).eval((*pos + (worldXOffset * tileSize)) / feature_size, (*(pos + 1) + (worldYOffset * tileSize)) / feature_size);
+        val = (*noise1).eval(((*pos) - width / 2 + (worldXOffset * tileSize)) / feature_size, ((*(pos + 1)) - height / 2 + (worldYOffset * tileSize)) / feature_size);
     }
     else if (gen == 1)
     {
-        val = (*noise2).eval((*pos + (worldXOffset * tileSize)) / feature_size, (*(pos + 1) + (worldYOffset * tileSize)) / feature_size);
+        val = (*noise2).eval(((*pos) - width / 2 + (worldXOffset * tileSize)) / feature_size, ((*(pos + 1)) - height / 2 + (worldYOffset * tileSize)) / feature_size);
     }
     else
     {
@@ -403,35 +403,35 @@ string CheckForEmptyTile(int idx, string type)
     }
 }
 
-int *GetScaledXYFromIndex(int idx)
+double *GetScaledXYFromIndex(int idx)
 {
-    static int returns1[2];
+    static double returns1[2];
     returns1[0] = idx % amountX;
-    returns1[1] = idx / amountX;
+    returns1[1] = floor(idx / amountX);
     return returns1;
 }
 
-int GetIndexFromScaledXY(int x, int y)
+int GetIndexFromScaledXY(double x, double y)
 {
     return x + y * amountX;
 }
 
-int GetIndexFromXY(int x, int y)
+int GetIndexFromXY(double x, double y)
 {
     int mouseX = round(ScaleNum(x, 0, width, 0, amountX));
     int mouseY = round(ScaleNum(y, 0, height, 0, amountY));
     return GetIndexFromScaledXY(mouseX, mouseY);
 }
 
-int *GetRealXYFromScaledXY(int x, int y)
+double *GetRealXYFromScaledXY(double x, double y)
 {
-    static int returns2[2];
+    static double returns2[2];
     returns2[0] = round(ScaleNum(x, 0, amountX, 0, width));
     returns2[1] = round(ScaleNum(y, 0, amountY, 0, height));
     return returns2;
 }
 
-float ScaleNum(float n, float minN, float maxN, float min, float max)
+double ScaleNum(double n, double minN, double maxN, double min, double max)
 {
     return (((n - minN) / (maxN - minN)) * (max - min)) + min;
 }

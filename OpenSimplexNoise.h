@@ -1,8 +1,6 @@
 #ifndef _NOISE_H_
 #define _NOISE_H_
 
-#include "common.h"
-
 class OpenSimplexNoise
 {
 private:
