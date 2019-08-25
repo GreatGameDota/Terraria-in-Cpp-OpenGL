@@ -7,7 +7,6 @@
     https://github.com/GreatGameDota
 */
 
-bool isRunning = true;
 int width = 1008;
 int height = 608;
 int tileSize = 8;
@@ -26,14 +25,16 @@ map<string, SDL_Surface *> images;
 void InitialWorldGen();
 void RenderAll();
 bool rendering = false;
-vector<string> Ground;
-vector<string> Background;
+vector<int> Ground;
+vector<int> Background;
+string groundNames[] = {"blank", "grass", "dirt", "stone", "flora", "wood", "torch", "tree", "tree-b-left", "tree-b-right", "tree-b-both", "tree-branch-right", "tree-branch-left", "tree-r-left", "tree-r-right", "tree-r-both", "tree-root-right", "tree-root-left"};
+string backgroundNames[] = {"dirt-wall", "stone-wall", "wood-wall", "sky"};
 vector<double> Light;
 void RenderGroundAtIndex(int idx);
 void GetScaledXYFromIndex(int idx);
-int GetIndexFromScaledXY(double x, double y);
+int GetIndexFromScaledXY(int x, int y);
 int GetIndexFromXY(double x, double y);
-void GetRealXYFromScaledXY(double x, double y);
+void GetRealXYFromScaledXY(int x, int y);
 double ScaleNum(double n, double minN, double maxN, double min, double max);
 
 OpenSimplexNoise *noise1 = nullptr;
@@ -48,20 +49,20 @@ vector<double> platformX;
 vector<double> platformY;
 void Generate();
 void GenerateGroundAtIndex(int idx);
-string CheckNeighbors(double x, double y, string type);
+string CheckNeighbors(int x, int y, string type);
 string CheckForEmptyTile(int idx, string type);
 string toString(double n);
 
-double scaled[2];
+int scaled[2];
 double pos[2];
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
-unsigned int WindowFlags;
+// unsigned int WindowFlags;
 
 bool init()
 {
-    WindowFlags = SDL_WINDOW_OPENGL;
+    // WindowFlags = SDL_WINDOW_OPENGL;
     if (SDL_Init(SDL_INIT_NOPARACHUTE & SDL_INIT_EVERYTHING) != 0)
     {
         SDL_Log("Unable to initialize SDL: %s\n", SDL_GetError());
@@ -84,10 +85,8 @@ bool init()
         height,
         SDL_WINDOW_OPENGL);
 
-    //Check that the window was succesfully created
     if (window == NULL)
     {
-        //Print error, if null
         printf("Could not create window: %s\n", SDL_GetError());
         return false;
     }
@@ -101,7 +100,6 @@ bool init()
         }
         else
         {
-            //Get window surface
             gScreenSurface = SDL_GetWindowSurface(window);
         }
         SDL_Log("Window Successful Generated");
@@ -118,13 +116,10 @@ int WinMain()
     if (!init())
     {
         printf("Failed to Initialize");
-        // return -1;
     }
-
     // Clear buffer with black background
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-
     //Swap Render Buffers
     SDL_GL_SwapWindow(window);
 
@@ -138,7 +133,6 @@ int WinMain()
     }
 
     srand(time(NULL));
-
     long rand1 = rand() * (RAND_MAX + 1) + rand();
     long rand2 = rand() * (RAND_MAX + 1) + rand();
     long rand3 = rand() * (RAND_MAX + 1) + rand();
@@ -165,7 +159,6 @@ void CleanUp()
     for (auto &image : images)
     {
         SDL_FreeSurface(image.second);
-        image.second = nullptr;
     }
     delete noise1;
     delete noise2;
@@ -180,8 +173,8 @@ void InitialWorldGen()
 {
     for (int i = 0; i < amountX * amountY; i++)
     {
-        Ground.push_back("");
-        Background.push_back("");
+        Ground.push_back(2);
+        Background.push_back(0);
     }
     gen = 0;
     feature_size = 100;
@@ -209,11 +202,11 @@ void RenderGroundAtIndex(int idx)
 {
     GetScaledXYFromIndex(idx);
     GetRealXYFromScaledXY(scaled[0], scaled[1]);
-    if (Background[idx] != "sky")
+    if (Background[idx] != 3)
     {
         string name = "";
-        //     string shape = CheckNeighbors(pos[0], pos[1], "background");
-        name = Background[idx] + "-" + "xxxx" + "1";
+        string shape = CheckNeighbors(scaled[0], scaled[1], "background");
+        name = backgroundNames[Background[idx]] + "-xxxx1";
         //     if (shape != "xxxx")
         //     {
         //         renderImage(pos[0],pos[1],"sky");
@@ -223,7 +216,7 @@ void RenderGroundAtIndex(int idx)
         //     {
         //          name += toString(rand() % 3 + 1);
         //     }
-        //     if (Ground[idx] == "blank")
+        //     if (Ground[idx] == 0)
         //     {
         //         if (shape == "xx0x")
         //         {
@@ -235,35 +228,35 @@ void RenderGroundAtIndex(int idx)
     }
     else
     {
-        renderImage(pos[0], pos[1], "sky");
+        // renderImage(pos[0], pos[1], "sky");
     }
-    if (Ground[idx] != "blank")
+    if (Ground[idx] != 0)
     {
         string name = "";
-        string shape = CheckNeighbors(pos[0], pos[1], "ground");
+        string shape = CheckNeighbors(scaled[0], scaled[1], "ground");
         // cout << Ground[idx] << "-" << shape << endl;
-        name = Ground[idx] + "-" + "xxxx" + "1";
+        name = groundNames[Ground[idx]] + "-xxxx1";
         // name = Ground[idx] + "-" + shape;
-        // if (Ground[idx] == "dirt" || Ground[idx] == "stone")
+        // if (Ground[idx] == 2 || Ground[idx] == 3)
         // {
         //     if (shape == "xxxx")
         //     {
         //         name += toString(rand() % 3 + 1);
         //     }
         // }
-        // if (Ground[idx] == "grass" || Ground[idx] == "stone" || Ground[idx] == "wood")
+        // if (Ground[idx] == 1 || Ground[idx] == 3 || Ground[idx] == 6)
         // {
         //     if (shape == "xx0x")
         //     {
         //         name += toString(rand() % 3 + 1);
         //     }
         // }
-        // if (Ground[idx] == "torch")
+        // if (Ground[idx] == 5)
         // {
         //     name = "torch";
         // }
         renderImage(pos[0], pos[1], name);
-        // if (shape != "xxxx" && Ground[idx] != "torch")
+        // if (shape != "xxxx" && Ground[idx] != 5)
         // {
         //     platformX.push_back(pos[0]);
         //     platformY.push_back(pos[1];
@@ -286,11 +279,11 @@ void GenerateGroundAtIndex(int idx)
     double val = 0;
     if (gen == 0)
     {
-        val = (*noise1).eval((pos[0] - width / 2 + (worldXOffset * tileSize)) / feature_size, (pos[1] - height / 2 + (worldYOffset * tileSize)) / feature_size);
+        val = (*noise1).eval((pos[0] + (worldXOffset * tileSize)) / feature_size, (pos[1] + (worldYOffset * tileSize)) / feature_size);
     }
     else if (gen == 1)
     {
-        val = (*noise2).eval((pos[0] - width / 2 + (worldXOffset * tileSize)) / feature_size, (pos[1] - height / 2 + (worldYOffset * tileSize)) / feature_size);
+        val = (*noise2).eval((pos[0] + (worldXOffset * tileSize)) / feature_size, (pos[1] + (worldYOffset * tileSize)) / feature_size);
     }
     else
     {
@@ -298,21 +291,21 @@ void GenerateGroundAtIndex(int idx)
     double newVal = ScaleNum(val, -1, 1, 0, 100);
     if (gen == 0)
     {
-        Background[idx] = "dirt-wall";
+        Background[idx] = 0;
         if (newVal < 15 || newVal > 85)
         {
-            Ground[idx] = "stone";
+            Ground[idx] = 3;
         }
         else
         {
-            Ground[idx] = "dirt";
+            Ground[idx] = 2;
         }
     }
     else if (gen == 1)
     {
         if (newVal < 15 || newVal > 80)
         {
-            Ground[idx] = "blank";
+            Ground[idx] = 0;
         }
         else
         {
@@ -323,7 +316,7 @@ void GenerateGroundAtIndex(int idx)
     }
 }
 
-string CheckNeighbors(double x, double y, string type)
+string CheckNeighbors(int x, int y, string type)
 {
     string shape = "";
     if (x > 0)
@@ -369,7 +362,7 @@ string CheckForEmptyTile(int idx, string type)
 {
     if (type == "ground")
     {
-        if (Ground[idx] == "blank" || Ground[idx] == "torch")
+        if (Ground[idx] == 0 || Ground[idx] == 7)
         {
             return "0";
         }
@@ -380,7 +373,7 @@ string CheckForEmptyTile(int idx, string type)
     }
     else if (type == "background")
     {
-        if (Background[idx] == "sky")
+        if (Background[idx] == 3)
         {
             return "0";
         }
@@ -398,10 +391,10 @@ string CheckForEmptyTile(int idx, string type)
 void GetScaledXYFromIndex(int idx)
 {
     scaled[0] = idx % amountX;
-    scaled[1] = floor(idx / amountX);
+    scaled[1] = idx / amountX;
 }
 
-int GetIndexFromScaledXY(double x, double y)
+int GetIndexFromScaledXY(int x, int y)
 {
     return x + y * amountX;
 }
@@ -413,7 +406,7 @@ int GetIndexFromXY(double x, double y)
     return GetIndexFromScaledXY(mouseX, mouseY);
 }
 
-void GetRealXYFromScaledXY(double x, double y)
+void GetRealXYFromScaledXY(int x, int y)
 {
     pos[0] = round(ScaleNum(x, 0, amountX, 0, width));
     pos[1] = round(ScaleNum(y, 0, amountY, 0, height));
@@ -481,10 +474,7 @@ void renderImage(double x, double y, string name)
 
 void loadSurface(string path)
 {
-    //The final optimized image
     SDL_Surface *optimizedSurface = nullptr;
-
-    //Load image at specified path
     SDL_Surface *loadedSurface = IMG_Load(path.c_str());
     if (loadedSurface == nullptr)
     {
@@ -493,15 +483,12 @@ void loadSurface(string path)
     }
     else
     {
-        //Convert surface to screen format
         optimizedSurface = SDL_ConvertSurface(loadedSurface, gScreenSurface->format, 0);
         if (optimizedSurface == NULL)
         {
             printf("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
             throw false;
         }
-
-        //Get rid of old loaded surface
         SDL_FreeSurface(loadedSurface);
     }
     string name = path.substr(7, path.length() - 11);
