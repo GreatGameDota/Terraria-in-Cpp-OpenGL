@@ -47,6 +47,10 @@ int worldXOffset = 0;
 int worldYOffset = 0;
 vector<double> platformX;
 vector<double> platformY;
+vector<int> customTileY;
+vector<int> customTileXScroll;
+vector<int> customTile;
+int screens = 3;
 void Generate();
 void GenerateGroundAtIndex(int idx);
 string CheckNeighbors(int x, int y, string type);
@@ -61,6 +65,9 @@ string toStringHelper(T n)
 
 int scaled[2];
 double pos[2];
+
+void digBlock(int x, int y);
+void Rerender(int idx);
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -453,8 +460,38 @@ void Run()
                     break;
                 }
             }
+            if (event.type == SDL_MOUSEBUTTONDOWN)
+            {
+                int x, y;
+                SDL_GetMouseState(&x, &y);
+                digBlock(x, y);
+            }
         }
     }
+}
+
+void digBlock(int x, int y)
+{
+    int idx = GetIndexFromXY(x, y);
+    if (Ground[idx] != 0)
+    {
+        Ground[idx] = 0;
+        Rerender(idx);
+        GetRealXYFromScaledXY(scaled[0], scaled[1]);
+        customTileY.push_back(pos[1] + worldYOffset * tileSize);
+        customTileXScroll.push_back(scaled[0] + worldXOffset + ((amountX * screens) / 2 - 30));
+        customTile.push_back(0);
+    }
+}
+
+void Rerender(int idx)
+{
+    RenderGroundAtIndex(idx);
+    RenderGroundAtIndex(idx - 1);
+    RenderGroundAtIndex(idx + 1);
+    RenderGroundAtIndex(idx - amountX);
+    RenderGroundAtIndex(idx + amountX);
+    SDL_UpdateWindowSurface(window);
 }
 
 void renderImage(double x, double y, string name)
