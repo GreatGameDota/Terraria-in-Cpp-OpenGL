@@ -66,6 +66,7 @@ string toStringHelper(T n)
 int scaled[2];
 double pos[2];
 
+bool mouseDown = false;
 void digBlock(int x, int y);
 void Rerender(int idx);
 
@@ -216,69 +217,69 @@ void RenderGroundAtIndex(int idx)
 {
     GetScaledXYFromIndex(idx);
     GetRealXYFromScaledXY(scaled[0], scaled[1]);
-    int randTile = 0;
-    if (Background[idx] != 3)
+    if (pos[0] > -tileSize && pos[1] > -tileSize && pos[0] < width && pos[1] < height)
     {
-        string name = "";
-        string shape = CheckNeighbors(scaled[0], scaled[1], "background");
-        // name = backgroundNames[Background[idx]] + "-xxxx1";
-        if (shape != "xxxx")
+        int randTile = 0;
+        if (Background[idx] != 3)
         {
-            renderImage(pos[0], pos[1], "sky");
-        }
-        name = backgroundNames[Background[idx]] + "-" + shape;
-        if (shape == "xxxx")
-        {
-            randTile = rand() % 3 + 1;
-            name += toStringHelper(randTile);
-        }
-        if (Ground[idx] == 0)
-        {
-            if (shape == "xx0x")
+            string name = "";
+            string shape = CheckNeighbors(scaled[0], scaled[1], "background");
+            if (shape != "xxxx")
             {
-                randTile = rand() % 2 + 1;
-                name += toStringHelper(randTile);
+                renderImage(pos[0], pos[1], "sky");
             }
-        }
-        //Brightness
-        renderImage(pos[0], pos[1], name);
-    }
-    else
-    {
-        renderImage(pos[0], pos[1], "sky");
-    }
-    if (Ground[idx] != 0)
-    {
-        string name = "";
-        string shape = CheckNeighbors(scaled[0], scaled[1], "ground");
-        // cout << Ground[idx] << "-" << shape << endl;
-        // name = groundNames[Ground[idx]] + "-xxxx1";
-        name = groundNames[Ground[idx]] + "-" + shape;
-        if (Ground[idx] == 2 || Ground[idx] == 3)
-        {
+            name = backgroundNames[Background[idx]] + "-" + shape;
             if (shape == "xxxx")
             {
                 randTile = rand() % 3 + 1;
                 name += toStringHelper(randTile);
             }
-        }
-        if (Ground[idx] == 1 || Ground[idx] == 3 || Ground[idx] == 6)
-        {
-            if (shape == "xx0x")
+            if (Ground[idx] == 0)
             {
-                randTile = rand() % 3 + 1;
-                name += toStringHelper(randTile);
+                if (shape == "xx0x")
+                {
+                    randTile = rand() % 2 + 1;
+                    name += toStringHelper(randTile);
+                }
             }
+            //Brightness
+            renderImage(pos[0], pos[1], name);
         }
-        if (Ground[idx] == 5)
+        else
         {
-            name = "torch";
+            renderImage(pos[0], pos[1], "sky");
         }
-        renderImage(pos[0], pos[1], name);
-        if (shape != "xxxx" && Ground[idx] != 5)
+        if (Ground[idx] != 0)
         {
-            platformX.push_back(pos[0]);
-            platformY.push_back(pos[1]);
+            string name = "";
+            string shape = CheckNeighbors(scaled[0], scaled[1], "ground");
+            name = groundNames[Ground[idx]] + "-" + shape;
+            if (Ground[idx] == 2 || Ground[idx] == 3)
+            {
+                if (shape == "xxxx")
+                {
+                    randTile = rand() % 3 + 1;
+                    name += toStringHelper(randTile);
+                }
+            }
+            if (Ground[idx] == 1 || Ground[idx] == 3 || Ground[idx] == 6)
+            {
+                if (shape == "xx0x")
+                {
+                    randTile = rand() % 3 + 1;
+                    name += toStringHelper(randTile);
+                }
+            }
+            if (Ground[idx] == 5)
+            {
+                name = "torch";
+            }
+            renderImage(pos[0], pos[1], name);
+            if (shape != "xxxx" && Ground[idx] != 5)
+            {
+                platformX.push_back(pos[0]);
+                platformY.push_back(pos[1]);
+            }
         }
     }
 }
@@ -442,6 +443,13 @@ void Run()
     bool fullScreen = false;
     while (gameLoop)
     {
+        if (mouseDown)
+        {
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+            digBlock(x, y);
+        }
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -462,9 +470,11 @@ void Run()
             }
             if (event.type == SDL_MOUSEBUTTONDOWN)
             {
-                int x, y;
-                SDL_GetMouseState(&x, &y);
-                digBlock(x, y);
+                mouseDown = true;
+            }
+            if (event.type == SDL_MOUSEBUTTONUP)
+            {
+                mouseDown = false;
             }
         }
     }
@@ -479,7 +489,7 @@ void digBlock(int x, int y)
         Rerender(idx);
         GetRealXYFromScaledXY(scaled[0], scaled[1]);
         customTileY.push_back(pos[1] + worldYOffset * tileSize);
-        customTileXScroll.push_back(scaled[0] + worldXOffset + ((amountX * screens) / 2 - 30));
+        customTileXScroll.push_back(scaled[0] + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
         customTile.push_back(0);
     }
 }
