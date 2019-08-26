@@ -9,7 +9,7 @@
 
 int width = 1008;
 int height = 608;
-int tileSize = 8;
+int tileSize = 16;
 int amountX = width / tileSize;
 int amountY = height / tileSize;
 
@@ -18,8 +18,8 @@ void CleanUp();
 void Run();
 bool loadAllImages();
 void loadSurface(string path);
-void renderImage(double x, double y, string name);
 SDL_Surface *gScreenSurface = nullptr;
+void renderImage(double x, double y, string name);
 map<string, SDL_Surface *> images;
 
 void InitialWorldGen();
@@ -51,7 +51,13 @@ void Generate();
 void GenerateGroundAtIndex(int idx);
 string CheckNeighbors(int x, int y, string type);
 string CheckForEmptyTile(int idx, string type);
-string toString(double n);
+template <typename T>
+string toStringHelper(T n)
+{
+    ostringstream oss;
+    oss << n;
+    return oss.str();
+}
 
 int scaled[2];
 double pos[2];
@@ -101,6 +107,7 @@ bool init()
         else
         {
             gScreenSurface = SDL_GetWindowSurface(window);
+            SDL_SetSurfaceBlendMode(gScreenSurface, SDL_BLENDMODE_BLEND);
         }
         SDL_Log("Window Successful Generated");
     }
@@ -118,7 +125,7 @@ int WinMain()
         printf("Failed to Initialize");
     }
     // Clear buffer with black background
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
     //Swap Render Buffers
     SDL_GL_SwapWindow(window);
@@ -202,65 +209,70 @@ void RenderGroundAtIndex(int idx)
 {
     GetScaledXYFromIndex(idx);
     GetRealXYFromScaledXY(scaled[0], scaled[1]);
+    int randTile = 0;
     if (Background[idx] != 3)
     {
         string name = "";
         string shape = CheckNeighbors(scaled[0], scaled[1], "background");
-        name = backgroundNames[Background[idx]] + "-xxxx1";
-        //     if (shape != "xxxx")
-        //     {
-        //         renderImage(pos[0],pos[1],"sky");
-        //     }
-        //     name = Background[idx] + "-" + shape;
-        //     if (shape == "xxxx")
-        //     {
-        //          name += toString(rand() % 3 + 1);
-        //     }
-        //     if (Ground[idx] == 0)
-        //     {
-        //         if (shape == "xx0x")
-        //         {
-        //             name += toString(rand() % 2 + 1);
-        //         }
-        //     }
+        // name = backgroundNames[Background[idx]] + "-xxxx1";
+        if (shape != "xxxx")
+        {
+            renderImage(pos[0], pos[1], "sky");
+        }
+        name = backgroundNames[Background[idx]] + "-" + shape;
+        if (shape == "xxxx")
+        {
+            randTile = rand() % 3 + 1;
+            name += toStringHelper(randTile);
+        }
+        if (Ground[idx] == 0)
+        {
+            if (shape == "xx0x")
+            {
+                randTile = rand() % 2 + 1;
+                name += toStringHelper(randTile);
+            }
+        }
         //Brightness
         renderImage(pos[0], pos[1], name);
     }
     else
     {
-        // renderImage(pos[0], pos[1], "sky");
+        renderImage(pos[0], pos[1], "sky");
     }
     if (Ground[idx] != 0)
     {
         string name = "";
         string shape = CheckNeighbors(scaled[0], scaled[1], "ground");
         // cout << Ground[idx] << "-" << shape << endl;
-        name = groundNames[Ground[idx]] + "-xxxx1";
-        // name = Ground[idx] + "-" + shape;
-        // if (Ground[idx] == 2 || Ground[idx] == 3)
-        // {
-        //     if (shape == "xxxx")
-        //     {
-        //         name += toString(rand() % 3 + 1);
-        //     }
-        // }
-        // if (Ground[idx] == 1 || Ground[idx] == 3 || Ground[idx] == 6)
-        // {
-        //     if (shape == "xx0x")
-        //     {
-        //         name += toString(rand() % 3 + 1);
-        //     }
-        // }
-        // if (Ground[idx] == 5)
-        // {
-        //     name = "torch";
-        // }
+        // name = groundNames[Ground[idx]] + "-xxxx1";
+        name = groundNames[Ground[idx]] + "-" + shape;
+        if (Ground[idx] == 2 || Ground[idx] == 3)
+        {
+            if (shape == "xxxx")
+            {
+                randTile = rand() % 3 + 1;
+                name += toStringHelper(randTile);
+            }
+        }
+        if (Ground[idx] == 1 || Ground[idx] == 3 || Ground[idx] == 6)
+        {
+            if (shape == "xx0x")
+            {
+                randTile = rand() % 3 + 1;
+                name += toStringHelper(randTile);
+            }
+        }
+        if (Ground[idx] == 5)
+        {
+            name = "torch";
+        }
         renderImage(pos[0], pos[1], name);
-        // if (shape != "xxxx" && Ground[idx] != 5)
-        // {
-        //     platformX.push_back(pos[0]);
-        //     platformY.push_back(pos[1];
-        // }
+        if (shape != "xxxx" && Ground[idx] != 5)
+        {
+            platformX.push_back(pos[0]);
+            platformY.push_back(pos[1]);
+        }
     }
 }
 
@@ -328,7 +340,7 @@ string CheckNeighbors(int x, int y, string type)
     {
         shape += "x";
     }
-    if (x < amountX)
+    if (x < amountX - 1)
     {
         int idx = GetIndexFromScaledXY(x + 1, y);
         shape += CheckForEmptyTile(idx, type);
@@ -346,7 +358,7 @@ string CheckNeighbors(int x, int y, string type)
     {
         shape += "x";
     }
-    if (y < amountY)
+    if (y < amountY - 1)
     {
         int idx = GetIndexFromScaledXY(x, y + 1);
         shape += CheckForEmptyTile(idx, type);
@@ -450,7 +462,6 @@ void renderImage(double x, double y, string name)
     SDL_Rect pos;
     pos.x = x;
     pos.y = y;
-    // SDL_BlitSurface(images[name], NULL, gScreenSurface, &pos);
     SDL_Rect size;
     size.w = tileSize;
     size.h = tileSize;
@@ -463,8 +474,7 @@ void renderImage(double x, double y, string name)
         images[name]->format->Gmask,
         images[name]->format->Bmask,
         images[name]->format->Amask);
-    SDL_FillRect(pScaleSurface, &size, SDL_MapRGBA(pScaleSurface->format, 255, 0, 0, 255));
-
+    SDL_FillRect(pScaleSurface, &size, SDL_MapRGBA(pScaleSurface->format, 0, 0, 0, 0));
     SDL_BlitScaled(images[name], NULL, pScaleSurface, NULL);
     SDL_BlitSurface(pScaleSurface, NULL, gScreenSurface, &pos);
 
@@ -483,7 +493,7 @@ void loadSurface(string path)
     }
     else
     {
-        optimizedSurface = SDL_ConvertSurface(loadedSurface, gScreenSurface->format, 0);
+        optimizedSurface = SDL_ConvertSurfaceFormat(loadedSurface, SDL_PIXELFORMAT_RGBA8888, 0);
         if (optimizedSurface == NULL)
         {
             printf("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
@@ -647,11 +657,4 @@ bool loadAllImages()
         return false;
     }
     return true;
-}
-
-string toString(int n)
-{
-    ostringstream oss;
-    oss << n;
-    return oss.str();
 }
