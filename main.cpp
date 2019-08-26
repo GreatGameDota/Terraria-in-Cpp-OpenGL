@@ -53,6 +53,11 @@ vector<int> customTile;
 int screens = 3;
 void Generate();
 void GenerateGroundAtIndex(int idx);
+void GenerateSurface();
+vector<int> surface;
+void RenderSurface();
+void CenterMiddle();
+void GenSurfaceAtScaledX(int x);
 string CheckNeighbors(int x, int y, string type);
 string CheckForEmptyTile(int idx, string type);
 template <typename T>
@@ -198,7 +203,18 @@ void InitialWorldGen()
     feature_size = 200;
     Generate();
     gen = 2;
-    feature_size = 500;
+    feature_size = 100;
+    GenerateSurface();
+    // int index = 0;
+    // for (int i = 0; i < amountY; i++)
+    // {
+    //     for (int j = 0; j < amountX; j++)
+    //     {
+    //         cout << Background[index];
+    //         index++;
+    //     }
+    //     cout << endl;
+    // }
 }
 
 void RenderAll()
@@ -217,7 +233,7 @@ void RenderGroundAtIndex(int idx)
 {
     GetScaledXYFromIndex(idx);
     GetRealXYFromScaledXY(scaled[0], scaled[1]);
-    if (pos[0] > -tileSize && pos[1] > -tileSize && pos[0] < width && pos[1] < height)
+    if (pos[0] > -1 && pos[1] > -1 && pos[0] < width && pos[1] < height)
     {
         int randTile = 0;
         if (Background[idx] != 3)
@@ -234,13 +250,20 @@ void RenderGroundAtIndex(int idx)
                 randTile = rand() % 3 + 1;
                 name += toStringHelper(randTile);
             }
-            if (Ground[idx] == 0)
+            if (shape == "xx0x")
             {
-                if (shape == "xx0x")
-                {
-                    randTile = rand() % 2 + 1;
-                    name += toStringHelper(randTile);
-                }
+                randTile = rand() % 2 + 1;
+                name += toStringHelper(randTile);
+            }
+            if (shape == "000x")
+            {
+                randTile = rand() % 2 + 1;
+                name = backgroundNames[Background[idx]] + "-xx0x" + toStringHelper(randTile);
+            }
+            if (shape == "00xx")
+            {
+                randTile = rand() % 3 + 1;
+                name = backgroundNames[Background[idx]] + "-xxxx" + toStringHelper(randTile);
             }
             //Brightness
             renderImage(pos[0], pos[1], name);
@@ -336,6 +359,93 @@ void GenerateGroundAtIndex(int idx)
     }
 }
 
+void GenerateSurface()
+{
+    GetRealXYFromScaledXY(1, rand() % 10 + 15);
+    int surfaceX = ceil(screens / 2);
+    int surfaceY = pos[1];
+    for (int i = 0; i < amountX * screens; i++)
+    {
+        double val = (*noise3).eval(surfaceX / feature_size, 0);
+        surfaceY += val * tileSize;
+        int idx = GetIndexFromXY(-4, surfaceY);
+        GetScaledXYFromIndex(idx);
+        GetRealXYFromScaledXY(scaled[0], scaled[1]);
+        surface.push_back(pos[1]);
+        surfaceX += tileSize;
+    }
+    RenderSurface();
+    CenterMiddle();
+}
+
+void RenderSurface()
+{
+    for (int i = 0; i < amountX; i++)
+    {
+        GenSurfaceAtScaledX(i);
+    }
+}
+
+void GenSurfaceAtScaledX(int x)
+{
+    int idx = x + worldXOffset + (amountX * screens) / 2 - amountX / 2;
+    GetRealXYFromScaledXY(x, 1);
+    int posX = pos[0];
+    int posY = surface[idx] + worldYOffset * -1 * tileSize;
+    if (posX > -1 && posY > -1 && posX < width - tileSize / 2 && posY < height - tileSize / 2)
+    {
+        int index = GetIndexFromXY(posX, posY);
+        if (Ground[index] == 2)
+        {
+            Ground[index] = 1;
+        }
+        else
+        {
+            Ground[index] = Ground[index] + 100;
+        }
+        Background[index] = 3;
+    }
+    cout << posY << endl;
+    if (posY > height - tileSize / 2 || (posX > -1 && posY > -1 && posX < width - tileSize / 2 && posY < height - tileSize / 2))
+    {
+        int idx2 = x;
+        while (!(Ground[idx2] == 1 || Ground[idx2] > 99 || idx2 > amountX * amountY))
+        {
+            Ground[idx2] = 0;
+            Background[idx2] = 3;
+            idx2 += amountX;
+        }
+        //Sunlight stuff
+        if (Ground[idx2] > 99 && !(idx2 > amountX * amountY))
+        {
+            Ground[idx2] = Ground[idx2] - 100;
+            //Sunlight
+            //Sunlight
+        }
+        idx2 += amountX;
+        if (Ground[idx2] == 0 && !(idx2 > amountX * amountY))
+        {
+            Ground[idx2 - amountX] = 0;
+            Background[idx2 - amountX] = 3;
+            //Sunlight
+        }
+        else
+        {
+            idx2 += amountX;
+            if (Ground[idx2] == 0 && !(idx2 > amountX * amountY))
+            {
+                Ground[idx2 - 2 * amountX] = 0;
+                Background[idx2 - 2 * amountX] = 3;
+                //Sunlight
+            }
+        }
+    }
+}
+
+void CenterMiddle()
+{
+}
+
 string CheckNeighbors(int x, int y, string type)
 {
     string shape = "";
@@ -421,7 +531,7 @@ int GetIndexFromScaledXY(int x, int y)
 
 int GetIndexFromXY(double x, double y)
 {
-    int mouseX = round(ScaleNum(x, 0, width, 0, amountX));
+    int mouseX = floor(ScaleNum(x, 0, width, 0, amountX));
     int mouseY = round(ScaleNum(y, 0, height, 0, amountY));
     return GetIndexFromScaledXY(mouseX, mouseY);
 }
