@@ -50,7 +50,8 @@ vector<double> platformY;
 vector<int> customTileY;
 vector<int> customTileXScroll;
 vector<int> customTile;
-int screens = 3;
+int screens = 31;
+bool initialGen = false;
 void Generate();
 void GenerateGroundAtIndex(int idx);
 void GenerateSurface();
@@ -60,6 +61,15 @@ void CenterMiddle();
 void GenSurfaceAtScaledX(int x);
 string CheckNeighbors(int x, int y, string type);
 string CheckForEmptyTile(int idx, string type);
+void MoveWorldUpBy(int offset);
+void MoveWorldDownBy(int offset);
+void MoveWorldLeftBy(int offset);
+void MoveWorldRightBy(int offset);
+void RegenEntireWorld();
+void MoveYIndex(int y, int idx);
+void MoveXIndex(int x, int idx);
+void RegenYAtIndex(int idx);
+void RegenXAtIndex(int idx);
 template <typename T>
 string toStringHelper(T n)
 {
@@ -191,6 +201,7 @@ void CleanUp()
 
 void InitialWorldGen()
 {
+    initialGen = true;
     for (int i = 0; i < amountX * amountY; i++)
     {
         Ground.push_back(2);
@@ -215,6 +226,7 @@ void InitialWorldGen()
     //     }
     //     cout << endl;
     // }
+    initialGen = false;
 }
 
 void RenderAll()
@@ -227,6 +239,9 @@ void RenderAll()
     }
     rendering = false;
     finish();
+    GetRealXYFromScaledXY(ceil(amountX / 2), ceil(amountY / 2));
+    SDL_Rect mid{static_cast<int>(pos[0]), static_cast<int>(pos[1]), tileSize, tileSize};
+    SDL_FillRect(gScreenSurface, &mid, SDL_MapRGB(gScreenSurface->format, 0x00, 0x00, 0x00));
 }
 
 void RenderGroundAtIndex(int idx)
@@ -260,10 +275,18 @@ void RenderGroundAtIndex(int idx)
                 randTile = rand() % 2 + 1;
                 name = backgroundNames[Background[idx]] + "-xx0x" + toStringHelper(randTile);
             }
-            if (shape == "00xx")
+            if (shape == "00xx" || shape == "00x0" || shape == "xx00")
             {
                 randTile = rand() % 3 + 1;
                 name = backgroundNames[Background[idx]] + "-xxxx" + toStringHelper(randTile);
+            }
+            if (shape == "x000")
+            {
+                name = backgroundNames[Background[idx]] + "-x0xx";
+            }
+            if (shape == "0x00")
+            {
+                name = backgroundNames[Background[idx]] + "-0xxx";
             }
             //Brightness
             renderImage(pos[0], pos[1], name);
@@ -376,6 +399,7 @@ void GenerateSurface()
     }
     RenderSurface();
     CenterMiddle();
+    cout << worldYOffset << endl;
 }
 
 void RenderSurface()
@@ -405,7 +429,6 @@ void GenSurfaceAtScaledX(int x)
         }
         Background[index] = 3;
     }
-    cout << posY << endl;
     if (posY > height - tileSize / 2 || (posX > -1 && posY > -1 && posX < width - tileSize / 2 && posY < height - tileSize / 2))
     {
         int idx2 = x;
@@ -419,7 +442,6 @@ void GenSurfaceAtScaledX(int x)
         if (Ground[idx2] > 99 && !(idx2 > amountX * amountY))
         {
             Ground[idx2] = Ground[idx2] - 100;
-            //Sunlight
             //Sunlight
         }
         idx2 += amountX;
@@ -444,6 +466,236 @@ void GenSurfaceAtScaledX(int x)
 
 void CenterMiddle()
 {
+    int idx = ceil(amountX / 2);
+    if (Ground[idx] > 1)
+    {
+        // MoveWorldDownBy(amountY);
+        worldYOffset -= amountY + 2;
+        RegenEntireWorld();
+        cout << "down" << amountY + 2 << endl;
+        CenterMiddle();
+    }
+    else
+    {
+        int i = 1;
+        int center = ceil(amountY / 2) + 2;
+        while (Background[idx] == 3 && !(i > amountY - 1))
+        {
+            idx += amountX;
+            i++;
+        }
+        if (i == center)
+        {
+            return;
+        }
+        else
+        {
+            if (i > amountY)
+            {
+                // MoveWorldUpBy(amountY);
+                worldYOffset += amountY - 2;
+                RegenEntireWorld();
+                cout << "up" << amountY - 2 << endl;
+                CenterMiddle();
+            }
+            else if (i > center)
+            {
+                // MoveWorldUpBy(i - center);
+                worldYOffset += i - center;
+                RegenEntireWorld();
+                cout << "up" << i - center << endl;
+                CenterMiddle();
+            }
+            else
+            {
+                // MoveWorldDownBy(center - i);
+                worldYOffset -= center - i;
+                RegenEntireWorld();
+                cout << "down" << center - i << endl;
+                CenterMiddle();
+            }
+        }
+    }
+    if (!initialGen)
+    {
+        RenderAll();
+    }
+}
+
+void MoveWorldUpBy(int offset)
+{
+    worldYOffset += offset;
+    if (offset > amountY - 1 && initialGen)
+    {
+        RegenEntireWorld();
+        // CenterMiddle();
+    }
+    else
+    {
+        int scroll_i = offset + 1;
+        while (!(scroll_i >= amountY))
+        {
+            MoveYIndex(scroll_i, scroll_i - offset);
+            scroll_i++;
+        }
+        scroll_i = amountY;
+        for (int i = 0; i < offset; i++)
+        {
+            RegenXAtIndex(scroll_i);
+            scroll_i--;
+        }
+        RenderSurface();
+        if (!initialGen)
+        {
+            RenderAll();
+        }
+    }
+}
+
+void MoveWorldDownBy(int offset)
+{
+    worldYOffset -= offset;
+    if (offset > amountY - 1 && initialGen)
+    {
+        RegenEntireWorld();
+        // CenterMiddle();
+    }
+    else
+    {
+        int scroll_i = amountY - offset;
+        while (!(scroll_i <= -1))
+        {
+            MoveYIndex(scroll_i, scroll_i + offset);
+            scroll_i--;
+        }
+        scroll_i = 0;
+        for (int i = 0; i < offset; i++)
+        {
+            RegenXAtIndex(scroll_i);
+            scroll_i++;
+        }
+        RenderSurface();
+        if (!initialGen)
+        {
+            RenderAll();
+        }
+    }
+}
+
+void MoveWorldLeftBy(int offset)
+{
+    worldXOffset += offset;
+    int scroll_i = amountX - offset;
+    while (!(scroll_i <= 0)) // MAY NEED TO BE -1
+    {
+        MoveXIndex(scroll_i, scroll_i + offset);
+        scroll_i--;
+    }
+    scroll_i = 0;
+    for (int i = 0; i < offset; i++)
+    {
+        RegenXAtIndex(scroll_i);
+        scroll_i++;
+    }
+    RenderSurface();
+    RenderAll();
+}
+
+void MoveWorldRightBy(int offset)
+{
+    worldXOffset -= offset;
+    int scroll_i = offset + 1;
+    while (!(scroll_i >= amountX + 1))
+    {
+        MoveXIndex(scroll_i, scroll_i - offset);
+        scroll_i++;
+    }
+    scroll_i = amountX;
+    for (int i = 0; i < offset; i++)
+    {
+        RegenXAtIndex(scroll_i);
+        scroll_i--;
+    }
+    RenderSurface();
+    RenderAll();
+}
+
+void RegenEntireWorld()
+{
+    gen = 0;
+    feature_size = 100;
+    Generate();
+    gen = 1;
+    feature_size = 200;
+    Generate();
+    RenderSurface();
+    if (!initialGen)
+    {
+        RenderAll();
+    }
+}
+
+void MoveYIndex(int y, int idx)
+{
+    int idx2 = y * amountX;
+    for (int i = 0; i < amountX; i++)
+    {
+        Ground[idx2 + ((idx - y) * amountX)] = Ground[idx2];
+        Background[idx2 + ((idx - y) * amountX)] = Background[idx2];
+        cout << idx2 + ((idx - y) * amountX) << endl;
+        idx2++;
+    }
+}
+
+void MoveXIndex(int x, int idx)
+{
+    int idx2 = x;
+    for (int i = 0; i < amountY; i++)
+    {
+        Ground[idx2 + (idx - x)] = Ground[idx2];
+        Background[idx2 + (idx - x)] = Background[idx2];
+        idx2++;
+    }
+}
+
+void RegenXAtIndex(int idx)
+{
+    gen = 0;
+    feature_size = 100;
+    int idx2 = idx * amountX;
+    for (int i = 0; i < amountX; i++)
+    {
+        GenerateGroundAtIndex(idx2);
+        idx2++;
+    }
+    gen = 1;
+    feature_size = 200;
+    idx2 = idx * amountX;
+    for (int i = 0; i < amountX; i++)
+    {
+        GenerateGroundAtIndex(idx2);
+        idx2++;
+    }
+}
+
+void RegenYAtIndex(int idx)
+{
+    gen = 0;
+    feature_size = 100;
+    int idx2 = idx;
+    for (int i = 0; i < amountY; i++)
+    {
+        GenerateGroundAtIndex(idx2);
+        idx2 += amountX;
+    }
+    gen = 1;
+    feature_size = 200;
+    idx2 = idx;
+    for (int i = 0; i < amountY; i++)
+    {
+        GenerateGroundAtIndex(idx2);
+        idx2 += amountX;
+    }
 }
 
 string CheckNeighbors(int x, int y, string type)
