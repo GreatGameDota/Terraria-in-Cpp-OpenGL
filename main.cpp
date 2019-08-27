@@ -84,6 +84,7 @@ double pos[2];
 bool mouseDown = false;
 void digBlock(int x, int y);
 void Rerender(int idx);
+vector<int> todo;
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -141,7 +142,7 @@ bool init()
 
 int WinMain()
 {
-    // startTimer();
+    startTimer();
     //Error Checking/Initialisation
     if (!init())
     {
@@ -171,15 +172,12 @@ int WinMain()
     noise3 = new OpenSimplexNoise{rand3};
 
     InitialWorldGen();
-    RenderAll();
-
-    SDL_UpdateWindowSurface(window);
 
     Run();
 
     CleanUp();
 
-    // finish();
+    finish();
     system("pause");
     return 0;
 }
@@ -206,6 +204,7 @@ void InitialWorldGen()
     {
         Ground.push_back(2);
         Background.push_back(0);
+        todo.push_back(i);
     }
     gen = 0;
     feature_size = 100;
@@ -232,16 +231,16 @@ void InitialWorldGen()
 void RenderAll()
 {
     rendering = true;
-    startTimer();
-    for (int i = 0; i < Ground.size(); i++)
+    for (int i = 0; i < todo.size(); i++)
     {
-        RenderGroundAtIndex(i);
+        RenderGroundAtIndex(todo[i]);
     }
+    todo.clear();
+    SDL_UpdateWindowSurface(window);
     rendering = false;
-    finish();
-    GetRealXYFromScaledXY(ceil(amountX / 2), ceil(amountY / 2));
-    SDL_Rect mid{static_cast<int>(pos[0]), static_cast<int>(pos[1]), tileSize, tileSize};
-    SDL_FillRect(gScreenSurface, &mid, SDL_MapRGB(gScreenSurface->format, 0x00, 0x00, 0x00));
+    // GetRealXYFromScaledXY(ceil(amountX / 2), ceil(amountY / 2));
+    // SDL_Rect mid{static_cast<int>(pos[0]), static_cast<int>(pos[1]), tileSize, tileSize};
+    // SDL_FillRect(gScreenSurface, &mid, SDL_MapRGB(gScreenSurface->format, 0x00, 0x00, 0x00));
 }
 
 void RenderGroundAtIndex(int idx)
@@ -472,7 +471,7 @@ void CenterMiddle()
         // MoveWorldDownBy(amountY);
         worldYOffset -= amountY + 2;
         RegenEntireWorld();
-        cout << "down" << amountY + 2 << endl;
+        // cout << "down" << amountY + 2 << endl;
         CenterMiddle();
     }
     else
@@ -495,7 +494,7 @@ void CenterMiddle()
                 // MoveWorldUpBy(amountY);
                 worldYOffset += amountY - 2;
                 RegenEntireWorld();
-                cout << "up" << amountY - 2 << endl;
+                // cout << "up" << amountY - 2 << endl;
                 CenterMiddle();
             }
             else if (i > center)
@@ -503,7 +502,7 @@ void CenterMiddle()
                 // MoveWorldUpBy(i - center);
                 worldYOffset += i - center;
                 RegenEntireWorld();
-                cout << "up" << i - center << endl;
+                // cout << "up" << i - center << endl;
                 CenterMiddle();
             }
             else
@@ -511,7 +510,7 @@ void CenterMiddle()
                 // MoveWorldDownBy(center - i);
                 worldYOffset -= center - i;
                 RegenEntireWorld();
-                cout << "down" << center - i << endl;
+                // cout << "down" << center - i << endl;
                 CenterMiddle();
             }
         }
@@ -642,7 +641,6 @@ void MoveYIndex(int y, int idx)
     {
         Ground[idx2 + ((idx - y) * amountX)] = Ground[idx2];
         Background[idx2 + ((idx - y) * amountX)] = Background[idx2];
-        cout << idx2 + ((idx - y) * amountX) << endl;
         idx2++;
     }
 }
@@ -839,6 +837,7 @@ void Run()
                 mouseDown = false;
             }
         }
+        RenderAll();
     }
 }
 
@@ -858,12 +857,17 @@ void digBlock(int x, int y)
 
 void Rerender(int idx)
 {
-    RenderGroundAtIndex(idx);
-    RenderGroundAtIndex(idx - 1);
-    RenderGroundAtIndex(idx + 1);
-    RenderGroundAtIndex(idx - amountX);
-    RenderGroundAtIndex(idx + amountX);
-    SDL_UpdateWindowSurface(window);
+    todo.push_back(idx);
+    todo.push_back(idx - 1);
+    todo.push_back(idx + 1);
+    todo.push_back(idx - amountX);
+    todo.push_back(idx + amountX);
+    // RenderGroundAtIndex(idx);
+    // RenderGroundAtIndex(idx - 1);
+    // RenderGroundAtIndex(idx + 1);
+    // RenderGroundAtIndex(idx - amountX);
+    // RenderGroundAtIndex(idx + amountX);
+    // SDL_UpdateWindowSurface(window);
 }
 
 void renderImage(double x, double y, string name)
@@ -1060,6 +1064,25 @@ bool loadAllImages()
         loadSurface("images/wood-plat-0x.png");
         loadSurface("images/wood-plat-x0.png");
         loadSurface("images/wood-plat-xx.png");
+        loadSurface("images/Player-Falling.png");
+        loadSurface("images/Player-Idle.png");
+        loadSurface("images/Player-Use-1.png");
+        loadSurface("images/Player-Use-2.png");
+        loadSurface("images/Player-Use-3.png");
+        loadSurface("images/Player-Use-4.png");
+        loadSurface("images/Player-Walk-1.png");
+        loadSurface("images/Player-Walk-2.png");
+        loadSurface("images/Player-Walk-3.png");
+        loadSurface("images/Player-Walk-4.png");
+        loadSurface("images/Player-Walk-5.png");
+        loadSurface("images/Player-Walk-6.png");
+        loadSurface("images/Player-Walk-7.png");
+        loadSurface("images/Player-Walk-8.png");
+        loadSurface("images/Player-Walk-9.png");
+        loadSurface("images/Player-Walk-10.png");
+        loadSurface("images/Player-Walk-11.png");
+        loadSurface("images/Player-Walk-12.png");
+        loadSurface("images/Player-Walk-13.png");
     }
     catch (bool e)
     {
