@@ -1,6 +1,7 @@
 #include "common.h"
 #include "util/TimeElapsed.h"
 #include "OpenSimplexNoise.h"
+#include "Player.h"
 
 /*
     Game by GreatGameDota
@@ -83,8 +84,14 @@ double pos[2];
 
 bool mouseDown = false;
 void digBlock(int x, int y);
+void placeBlock(int x, int y, int type);
 void Rerender(int idx);
 vector<int> todo;
+
+Player Player{width, height, tileSize};
+void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey);
+void ClearPlayer();
+void RerenderAroundPlayer();
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -131,7 +138,6 @@ bool init()
         else
         {
             gScreenSurface = SDL_GetWindowSurface(window);
-            SDL_SetSurfaceBlendMode(gScreenSurface, SDL_BLENDMODE_BLEND);
         }
         SDL_Log("Window Successful Generated");
     }
@@ -215,32 +221,23 @@ void InitialWorldGen()
     gen = 2;
     feature_size = 100;
     GenerateSurface();
-    // int index = 0;
-    // for (int i = 0; i < amountY; i++)
-    // {
-    //     for (int j = 0; j < amountX; j++)
-    //     {
-    //         cout << Background[index];
-    //         index++;
-    //     }
-    //     cout << endl;
-    // }
     initialGen = false;
 }
 
 void RenderAll()
 {
     rendering = true;
+    platformX.clear();
+    platformY.clear();
     for (int i = 0; i < todo.size(); i++)
     {
         RenderGroundAtIndex(todo[i]);
     }
     todo.clear();
-    SDL_UpdateWindowSurface(window);
     rendering = false;
     // GetRealXYFromScaledXY(ceil(amountX / 2), ceil(amountY / 2));
     // SDL_Rect mid{static_cast<int>(pos[0]), static_cast<int>(pos[1]), tileSize, tileSize};
-    // SDL_FillRect(gScreenSurface, &mid, SDL_MapRGB(gScreenSurface->format, 0x00, 0x00, 0x00));
+    // SDL_FillRect(gScreenSurface, &mid, 0xff000000);
 }
 
 void RenderGroundAtIndex(int idx)
@@ -320,7 +317,7 @@ void RenderGroundAtIndex(int idx)
                 name = "torch";
             }
             renderImage(pos[0], pos[1], name);
-            if (shape != "xxxx" && Ground[idx] != 5)
+            if (shape != "xxxx" && Ground[idx] != 6 && Ground[idx] != 0)
             {
                 platformX.push_back(pos[0]);
                 platformY.push_back(pos[1]);
@@ -801,15 +798,27 @@ void Run()
 {
     bool gameLoop = true;
     bool fullScreen = false;
+    bool arrowUp = false;
+    bool arrowLeft = false;
+    bool arrowRight = false;
+    bool wKey = false;
+    bool aKey = false;
+    bool dKey = false;
     while (gameLoop)
     {
         if (mouseDown)
         {
             int x, y;
             SDL_GetMouseState(&x, &y);
-            digBlock(x, y);
+            // digBlock(x, y);
+            placeBlock(x, y, 2);
         }
 
+        ClearPlayer();
+        RenderAll();
+        RerenderAroundPlayer();
+        RenderPlayer(arrowLeft, arrowRight, arrowUp, aKey, dKey, wKey);
+        SDL_UpdateWindowSurface(window);
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -824,6 +833,50 @@ void Run()
                 case SDLK_ESCAPE:
                     gameLoop = false;
                     break;
+                case SDLK_UP:
+                    arrowUp = true;
+                    break;
+                case SDLK_LEFT:
+                    arrowLeft = true;
+                    break;
+                case SDLK_RIGHT:
+                    arrowRight = true;
+                    break;
+                case SDLK_w:
+                    wKey = true;
+                    break;
+                case SDLK_a:
+                    aKey = true;
+                    break;
+                case SDLK_d:
+                    dKey = true;
+                    break;
+                default:
+                    break;
+                }
+            }
+            if (event.type == SDL_KEYUP)
+            {
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_UP:
+                    arrowUp = false;
+                    break;
+                case SDLK_LEFT:
+                    arrowLeft = false;
+                    break;
+                case SDLK_RIGHT:
+                    arrowRight = false;
+                    break;
+                case SDLK_w:
+                    wKey = false;
+                    break;
+                case SDLK_a:
+                    aKey = false;
+                    break;
+                case SDLK_d:
+                    dKey = false;
+                    break;
                 default:
                     break;
                 }
@@ -837,8 +890,34 @@ void Run()
                 mouseDown = false;
             }
         }
-        RenderAll();
     }
+}
+
+void ClearPlayer()
+{
+    SDL_Rect fill{Player.getX(), Player.getY(), Player.getWidth(), Player.getHeight()};
+    SDL_Surface *fill_surf = SDL_CreateRGBSurface(0, fill.w, fill.h,
+                                                  gScreenSurface->format->BitsPerPixel,
+                                                  gScreenSurface->format->Rmask,
+                                                  gScreenSurface->format->Gmask,
+                                                  gScreenSurface->format->Bmask,
+                                                  gScreenSurface->format->Amask);
+    SDL_FillRect(fill_surf, &fill, 0x00000000);
+    SDL_BlitSurface(fill_surf, NULL, gScreenSurface, &fill);
+    SDL_FreeSurface(fill_surf);
+}
+
+void RerenderAroundPlayer()
+{
+    int idx = GetIndexFromXY(Player.getX() + Player.getWidth() / 2, Player.getY() + Player.getHeight() / 2);
+    Rerender(idx);
+    todo.push_back(idx + 1 + amountX);
+    todo.push_back(idx - 1 + amountX);
+    todo.push_back(idx + 1 - amountX);
+    todo.push_back(idx - 1 - amountX);
+    todo.push_back(idx - amountX * 2);
+    todo.push_back(idx - 1 - amountX * 2);
+    todo.push_back(idx + 1 - amountX * 2);
 }
 
 void digBlock(int x, int y)
@@ -855,6 +934,20 @@ void digBlock(int x, int y)
     }
 }
 
+void placeBlock(int x, int y, int type)
+{
+    int idx = GetIndexFromXY(x, y);
+    if (Ground[idx] == 0)
+    {
+        Ground[idx] = type;
+        Rerender(idx);
+        GetRealXYFromScaledXY(scaled[0], scaled[1]);
+        customTileY.push_back(pos[1] + worldYOffset * tileSize);
+        customTileXScroll.push_back(scaled[0] + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+        customTile.push_back(0);
+    }
+}
+
 void Rerender(int idx)
 {
     todo.push_back(idx);
@@ -862,12 +955,46 @@ void Rerender(int idx)
     todo.push_back(idx + 1);
     todo.push_back(idx - amountX);
     todo.push_back(idx + amountX);
-    // RenderGroundAtIndex(idx);
-    // RenderGroundAtIndex(idx - 1);
-    // RenderGroundAtIndex(idx + 1);
-    // RenderGroundAtIndex(idx - amountX);
-    // RenderGroundAtIndex(idx + amountX);
-    // SDL_UpdateWindowSurface(window);
+}
+
+void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey)
+{
+    Player.tick(arrowLeft || aKey, arrowRight || dKey, arrowUp || wKey, platformX, platformY);
+    SDL_Rect pos;
+    pos.x = Player.getX();
+    pos.y = Player.getY();
+    SDL_Rect size;
+    size.w = Player.getWidth();
+    size.h = Player.getHeight();
+    SDL_Surface *pScaleSurface = SDL_CreateRGBSurface(
+        images[Player.getImage()]->flags,
+        size.w,
+        size.h,
+        images[Player.getImage()]->format->BitsPerPixel,
+        images[Player.getImage()]->format->Rmask,
+        images[Player.getImage()]->format->Gmask,
+        images[Player.getImage()]->format->Bmask,
+        images[Player.getImage()]->format->Amask);
+    SDL_FillRect(pScaleSurface, &size, SDL_MapRGBA(pScaleSurface->format, 0, 0, 0, 0));
+    SDL_BlitScaled(images[Player.getImage()], NULL, pScaleSurface, NULL);
+    SDL_BlitSurface(pScaleSurface, NULL, gScreenSurface, &pos);
+
+    SDL_FreeSurface(pScaleSurface);
+    pScaleSurface = nullptr;
+
+    // SDL_Rect mid{Player.getX(), Player.getY(), 4, 4};
+    // SDL_FillRect(gScreenSurface, &mid, 0x00ff0000);
+    // SDL_Rect mid2{Player.getX() + 60 / 2, Player.getY() + 96 / 2, 4, 4};
+    // SDL_FillRect(gScreenSurface, &mid2, 0x00ff0000);
+    // for (int i = 0; i < platformX.size(); i++)
+    // {
+    //     mid2.x = platformX[i];
+    //     mid2.y = platformY[i];
+    //     SDL_FillRect(gScreenSurface, &mid2, 0x00ff0000);
+    //     mid2.x = platformX[i] + tileSize;
+    //     mid2.y = platformY[i] + tileSize;
+    //     SDL_FillRect(gScreenSurface, &mid2, 0x00ff0000);
+    // }
 }
 
 void renderImage(double x, double y, string name)
