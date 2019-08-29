@@ -45,7 +45,7 @@ void Player::tick(bool left, bool right, bool jump, vector<double> platformX, ve
     canjump--;
     if (jump)
     {
-      vy = jumpHeight;
+      vy = -1 * jumpHeight;
     }
   }
   MovePlayer(vx, 0, platformX, platformY);
@@ -60,6 +60,18 @@ void Player::tick(bool left, bool right, bool jump, vector<double> platformX, ve
 
 void Player::MovePlayer(double sx, double sy, vector<double> platformX, vector<double> platformY)
 {
+  if (x > screenWidth - width)
+  {
+    x -= xSpeed;
+  }
+  else if (x < 0)
+  {
+    x += xSpeed;
+  }
+  else
+  {
+    x += sx;
+  }
   y += sy;
   bool intersect = checkIntersection(x, y, platformX, platformY, width, height, tileSize);
   if (!intersect)
@@ -71,9 +83,9 @@ void Player::MovePlayer(double sx, double sy, vector<double> platformX, vector<d
     vy = 0;
   }
   int slope = 0;
-  while (!(slope == 13 || !intersect))
+  while (!(slope == 12 || !intersect))
   {
-    y -= 0.01;
+    y -= 0.1;
     intersect = checkIntersection(x, y, platformX, platformY, width, height, tileSize);
     slope++;
   }
@@ -81,7 +93,7 @@ void Player::MovePlayer(double sx, double sy, vector<double> platformX, vector<d
   {
     canjump = 7;
   }
-  if (slope == 13)
+  if (slope == 12)
   {
     x += sx;
     y += sy + 10;
@@ -129,9 +141,9 @@ void Player::RespawnPlayer()
   canjump = 0;
   frame = 0;
   animationSpeed = 1;
-  gravity = 0.01;
-  jumpHeight = 6;
-  xSpeed = 2.5;
+  gravity = 0.1;
+  jumpHeight = 5;
+  xSpeed = 1;
 }
 
 bool checkIntersection(int x, int y, vector<double> platformX, vector<double> platformY, int width, int height, int tileSize)

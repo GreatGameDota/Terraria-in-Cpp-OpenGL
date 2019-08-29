@@ -1,1 +1,3 @@
-# First OpenGL Project
+# Terraria Clone in OpenGL
+
+## Unfinshed, WiP
