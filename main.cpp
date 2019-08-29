@@ -87,6 +87,8 @@ void digBlock(int x, int y);
 void placeBlock(int x, int y, int type);
 void Rerender(int idx);
 vector<int> todo;
+vector<int> oldRandomImageG;
+vector<int> oldRandomImageB;
 
 Player Player{width, height, tileSize};
 void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey);
@@ -115,7 +117,7 @@ bool init()
     }
     //Create Window Instance
     window = SDL_CreateWindow(
-        "Game Engine",
+        "Terraria in OpenGL",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         width,
@@ -211,6 +213,8 @@ void InitialWorldGen()
         Ground.push_back(2);
         Background.push_back(0);
         todo.push_back(i);
+        oldRandomImageG.push_back(0);
+        oldRandomImageB.push_back(0);
     }
     gen = 0;
     feature_size = 100;
@@ -285,6 +289,17 @@ void RenderGroundAtIndex(int idx)
                 name = backgroundNames[Background[idx]] + "-0xxx";
             }
             //Brightness
+            if (oldRandomImageB[idx] != name.back() - '0' && name.back() != '0' && name.back() != 'x' && oldRandomImageB[idx] != 0)
+            {
+                name.back() = '0' + oldRandomImageB[idx];
+            }
+            else
+            {
+                if (name.back() - '0' > 0 && name.back() != '0' && name.back() != 'x')
+                {
+                    oldRandomImageB[idx] = name.back() - '0';
+                }
+            }
             renderImage(pos[0], pos[1], name);
         }
         else
@@ -315,6 +330,17 @@ void RenderGroundAtIndex(int idx)
             if (Ground[idx] == 5)
             {
                 name = "torch";
+            }
+            if (oldRandomImageG[idx] != name.back() - '0' && name.back() != '0' && name.back() != 'x' && oldRandomImageG[idx] != 0)
+            {
+                name.back() = '0' + oldRandomImageG[idx];
+            }
+            else
+            {
+                if (name.back() - '0' > 0 && name.back() != '0' && name.back() != 'x')
+                {
+                    oldRandomImageG[idx] = name.back() - '0';
+                }
             }
             renderImage(pos[0], pos[1], name);
             if (shape != "xxxx" && Ground[idx] != 6 && Ground[idx] != 0)
@@ -810,8 +836,8 @@ void Run()
         {
             int x, y;
             SDL_GetMouseState(&x, &y);
-            // digBlock(x, y);
-            placeBlock(x, y, 2);
+            digBlock(x, y);
+            // placeBlock(x, y, 2);
         }
 
         ClearPlayer();
@@ -895,7 +921,7 @@ void Run()
 
 void ClearPlayer()
 {
-    SDL_Rect fill{Player.getX(), Player.getY(), Player.getWidth(), Player.getHeight()};
+    SDL_Rect fill{static_cast<int>(Player.getX()), static_cast<int>(Player.getY()), Player.getWidth(), Player.getHeight()};
     SDL_Surface *fill_surf = SDL_CreateRGBSurface(0, fill.w, fill.h,
                                                   gScreenSurface->format->BitsPerPixel,
                                                   gScreenSurface->format->Rmask,
@@ -909,7 +935,7 @@ void ClearPlayer()
 
 void RerenderAroundPlayer()
 {
-    int idx = GetIndexFromXY(Player.getX() + Player.getWidth() / 2, Player.getY() + Player.getHeight() / 2);
+    int idx = GetIndexFromXY(static_cast<int>(Player.getX()) + Player.getWidth() / 2, static_cast<int>(Player.getY()) + Player.getHeight() / 2);
     Rerender(idx);
     todo.push_back(idx + 1 + amountX);
     todo.push_back(idx - 1 + amountX);

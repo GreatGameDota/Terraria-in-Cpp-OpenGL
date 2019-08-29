@@ -10,8 +10,8 @@ using namespace std;
 class Player
 {
 private:
-  int x;
-  int y;
+  double x;
+  double y;
   string image;
   int width{60 / 2};
   int height{96 / 2};
@@ -24,7 +24,7 @@ private:
   int frame;
   int animationSpeed;
   double gravity;
-  int jumpHeight;
+  double jumpHeight;
   double xSpeed;
 
 public:
@@ -36,9 +36,9 @@ public:
   void MovePlayer(double sx, double sy, vector<double> platformX, vector<double> platformY);
   void SetCostume();
 
-  int getX() const { return x; }
+  double getX() const { return x; }
   void setX(int newX) { x = newX; }
-  int getY() const { return y; }
+  double getY() const { return y; }
   void setY(int newY) { y = newY; }
   string getImage() const { return image; }
   void setImage(string newImage) { image = newImage; }
