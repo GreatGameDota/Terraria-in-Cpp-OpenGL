@@ -95,6 +95,10 @@ void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool
 void ClearPlayer();
 void RerenderAroundPlayer();
 
+double previousTime;
+double currentTime = 0;
+double elapsedTime;
+
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
 // unsigned int WindowFlags;
@@ -150,7 +154,6 @@ bool init()
 
 int WinMain()
 {
-    startTimer();
     //Error Checking/Initialisation
     if (!init())
     {
@@ -181,11 +184,12 @@ int WinMain()
 
     InitialWorldGen();
 
+    // startTimer();
+
     Run();
 
     CleanUp();
 
-    finish();
     system("pause");
     return 0;
 }
@@ -840,11 +844,17 @@ void Run()
             // placeBlock(x, y, 2);
         }
 
+        // previousTime = currentTime;
+        // currentTime = finish();
+        // startTimer();
+        // elapsedTime = currentTime - previousTime;
         ClearPlayer();
         RenderAll();
         RerenderAroundPlayer();
         RenderPlayer(arrowLeft, arrowRight, arrowUp, aKey, dKey, wKey);
         SDL_UpdateWindowSurface(window);
+        // currentTime = finish();
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -985,7 +995,7 @@ void Rerender(int idx)
 
 void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey)
 {
-    Player.tick(arrowLeft || aKey, arrowRight || dKey, arrowUp || wKey, platformX, platformY);
+    Player.tick(arrowLeft || aKey, arrowRight || dKey, arrowUp || wKey, platformX, platformY, elapsedTime);
     SDL_Rect pos;
     pos.x = Player.getX();
     pos.y = Player.getY();
@@ -1217,25 +1227,44 @@ bool loadAllImages()
         loadSurface("images/wood-plat-0x.png");
         loadSurface("images/wood-plat-x0.png");
         loadSurface("images/wood-plat-xx.png");
-        loadSurface("images/Player-Falling.png");
-        loadSurface("images/Player-Idle.png");
-        loadSurface("images/Player-Use-1.png");
-        loadSurface("images/Player-Use-2.png");
-        loadSurface("images/Player-Use-3.png");
-        loadSurface("images/Player-Use-4.png");
-        loadSurface("images/Player-Walk-1.png");
-        loadSurface("images/Player-Walk-2.png");
-        loadSurface("images/Player-Walk-3.png");
-        loadSurface("images/Player-Walk-4.png");
-        loadSurface("images/Player-Walk-5.png");
-        loadSurface("images/Player-Walk-6.png");
-        loadSurface("images/Player-Walk-7.png");
-        loadSurface("images/Player-Walk-8.png");
-        loadSurface("images/Player-Walk-9.png");
-        loadSurface("images/Player-Walk-10.png");
-        loadSurface("images/Player-Walk-11.png");
-        loadSurface("images/Player-Walk-12.png");
-        loadSurface("images/Player-Walk-13.png");
+        loadSurface("images/Player-Falling-L.png");
+        loadSurface("images/Player-Idle-L.png");
+        loadSurface("images/Player-Use-1-L.png");
+        loadSurface("images/Player-Use-2-L.png");
+        loadSurface("images/Player-Use-3-L.png");
+        loadSurface("images/Player-Use-4-L.png");
+        loadSurface("images/Player-Walk-1-L.png");
+        loadSurface("images/Player-Walk-2-L.png");
+        loadSurface("images/Player-Walk-3-L.png");
+        loadSurface("images/Player-Walk-4-L.png");
+        loadSurface("images/Player-Walk-5-L.png");
+        loadSurface("images/Player-Walk-6-L.png");
+        loadSurface("images/Player-Walk-7-L.png");
+        loadSurface("images/Player-Walk-8-L.png");
+        loadSurface("images/Player-Walk-9-L.png");
+        loadSurface("images/Player-Walk-10-L.png");
+        loadSurface("images/Player-Walk-11-L.png");
+        loadSurface("images/Player-Walk-12-L.png");
+        loadSurface("images/Player-Walk-13-L.png");
+        loadSurface("images/Player-Falling-R.png");
+        loadSurface("images/Player-Idle-R.png");
+        loadSurface("images/Player-Use-1-R.png");
+        loadSurface("images/Player-Use-2-R.png");
+        loadSurface("images/Player-Use-3-R.png");
+        loadSurface("images/Player-Use-4-R.png");
+        loadSurface("images/Player-Walk-1-R.png");
+        loadSurface("images/Player-Walk-2-R.png");
+        loadSurface("images/Player-Walk-3-R.png");
+        loadSurface("images/Player-Walk-4-R.png");
+        loadSurface("images/Player-Walk-5-R.png");
+        loadSurface("images/Player-Walk-6-R.png");
+        loadSurface("images/Player-Walk-7-R.png");
+        loadSurface("images/Player-Walk-8-R.png");
+        loadSurface("images/Player-Walk-9-R.png");
+        loadSurface("images/Player-Walk-10-R.png");
+        loadSurface("images/Player-Walk-11-R.png");
+        loadSurface("images/Player-Walk-12-R.png");
+        loadSurface("images/Player-Walk-13-R.png");
     }
     catch (bool e)
     {

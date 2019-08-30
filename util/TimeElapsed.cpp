@@ -23,16 +23,18 @@ void startTimer()
   start = PerformanceCounter();
 }
 
-void finish()
+double finish()
 {
   long long finish = PerformanceCounter();
   double frequency = PerformanceFrequency();
   double milli = ((finish - start) * 1000.0) / frequency;
+  double milli2 = milli;
   long hr = milli / 3600000;
   milli = milli - 3600000 * hr;
   long min = milli / 60000;
   milli = milli - 60000 * min;
   long sec = milli / 1000;
   milli = milli - 1000 * sec;
-  std::cout << "\nTime elapsed: " << hr << "h:" << min << "m:" << sec << "s:" << milli << "ms" << std::endl;
+  // std::cout << "\nTime elapsed: " << hr << "h:" << min << "m:" << sec << "s:" << milli << "ms" << std::endl;
+  return milli2;
 }

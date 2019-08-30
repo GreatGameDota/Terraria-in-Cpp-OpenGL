@@ -2,6 +2,6 @@
 #define TIME_ELSAPSED_H
 
 void startTimer();
-void finish();
+double finish();
 
 #endif

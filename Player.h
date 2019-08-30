@@ -21,22 +21,28 @@ private:
   double vx;
   double vy;
   int canjump;
-  int frame;
-  int animationSpeed;
+  double frame;
+  double animationSpeed;
   double gravity;
   double jumpHeight;
   double xSpeed;
+  string dir;
+
+  bool checkIntersection(vector<double> platformX, vector<double> platformY);
+  void MovePlayer(double sx, double sy, vector<double> platformX, vector<double> platformY);
+  void SetCostume();
+  void PositionPlayer();
 
 public:
   Player(int width, int height, int tileSize);
 
   void RespawnPlayer();
-  void PositionPlayer();
-  void tick(bool left, bool right, bool jump, vector<double> platformX, vector<double> platformY);
-  void MovePlayer(double sx, double sy, vector<double> platformX, vector<double> platformY);
-  void SetCostume();
+  void tick(bool left, bool right, bool jump, vector<double> platformX, vector<double> platformY, double time);
 
-  double getX() const { return x; }
+  double getX() const
+  {
+    return x;
+  }
   void setX(int newX) { x = newX; }
   double getY() const { return y; }
   void setY(int newY) { y = newY; }
