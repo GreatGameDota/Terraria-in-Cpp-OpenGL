@@ -91,7 +91,7 @@ vector<int> oldRandomImageG;
 vector<int> oldRandomImageB;
 
 Player Player{width, height, tileSize};
-void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey);
+void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey, bool space);
 void ClearPlayer();
 void RerenderAroundPlayer();
 
@@ -834,6 +834,7 @@ void Run()
     bool wKey = false;
     bool aKey = false;
     bool dKey = false;
+    bool space = false;
     while (gameLoop)
     {
         if (mouseDown)
@@ -851,7 +852,7 @@ void Run()
         ClearPlayer();
         RenderAll();
         RerenderAroundPlayer();
-        RenderPlayer(arrowLeft, arrowRight, arrowUp, aKey, dKey, wKey);
+        RenderPlayer(arrowLeft, arrowRight, arrowUp, aKey, dKey, wKey, space);
         SDL_UpdateWindowSurface(window);
         // currentTime = finish();
 
@@ -887,6 +888,9 @@ void Run()
                 case SDLK_d:
                     dKey = true;
                     break;
+                case SDLK_SPACE:
+                    space = true;
+                    break;
                 default:
                     break;
                 }
@@ -912,6 +916,9 @@ void Run()
                     break;
                 case SDLK_d:
                     dKey = false;
+                    break;
+                case SDLK_SPACE:
+                    space = false;
                     break;
                 default:
                     break;
@@ -993,9 +1000,9 @@ void Rerender(int idx)
     todo.push_back(idx + amountX);
 }
 
-void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey)
+void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey, bool space)
 {
-    Player.tick(arrowLeft || aKey, arrowRight || dKey, arrowUp || wKey, platformX, platformY, elapsedTime);
+    Player.tick(arrowLeft || aKey, arrowRight || dKey, arrowUp || wKey || space, platformX, platformY, elapsedTime);
     SDL_Rect pos;
     pos.x = Player.getX();
     pos.y = Player.getY();
