@@ -19,7 +19,7 @@ void CleanUp();
 void Run();
 bool loadAllImages();
 void loadSurface(string path);
-SDL_Surface *gScreenSurface = nullptr;
+SDL_Surface *screen = nullptr;
 void renderImage(double x, double y, string name);
 map<string, SDL_Surface *> images;
 
@@ -143,7 +143,7 @@ bool init()
         }
         else
         {
-            gScreenSurface = SDL_GetWindowSurface(window);
+            screen = SDL_GetWindowSurface(window);
         }
         SDL_Log("Window Successful Generated");
     }
@@ -245,7 +245,7 @@ void RenderAll()
     rendering = false;
     // GetRealXYFromScaledXY(ceil(amountX / 2), ceil(amountY / 2));
     // SDL_Rect mid{static_cast<int>(pos[0]), static_cast<int>(pos[1]), tileSize, tileSize};
-    // SDL_FillRect(gScreenSurface, &mid, 0xff000000);
+    // SDL_FillRect(screen, &mid, 0xff000000);
 }
 
 void RenderGroundAtIndex(int idx)
@@ -933,13 +933,13 @@ void ClearPlayer()
 {
     SDL_Rect fill{static_cast<int>(Player.getX()), static_cast<int>(Player.getY()), Player.getWidth(), Player.getHeight()};
     SDL_Surface *fill_surf = SDL_CreateRGBSurface(0, fill.w, fill.h,
-                                                  gScreenSurface->format->BitsPerPixel,
-                                                  gScreenSurface->format->Rmask,
-                                                  gScreenSurface->format->Gmask,
-                                                  gScreenSurface->format->Bmask,
-                                                  gScreenSurface->format->Amask);
+                                                  screen->format->BitsPerPixel,
+                                                  screen->format->Rmask,
+                                                  screen->format->Gmask,
+                                                  screen->format->Bmask,
+                                                  screen->format->Amask);
     SDL_FillRect(fill_surf, &fill, 0x00000000);
-    SDL_BlitSurface(fill_surf, NULL, gScreenSurface, &fill);
+    SDL_BlitSurface(fill_surf, NULL, screen, &fill);
     SDL_FreeSurface(fill_surf);
 }
 
@@ -1013,24 +1013,10 @@ void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool
         images[Player.getImage()]->format->Amask);
     SDL_FillRect(pScaleSurface, &size, SDL_MapRGBA(pScaleSurface->format, 0, 0, 0, 0));
     SDL_BlitScaled(images[Player.getImage()], NULL, pScaleSurface, NULL);
-    SDL_BlitSurface(pScaleSurface, NULL, gScreenSurface, &pos);
+    SDL_BlitSurface(pScaleSurface, NULL, screen, &pos);
 
     SDL_FreeSurface(pScaleSurface);
     pScaleSurface = nullptr;
-
-    // SDL_Rect mid{Player.getX(), Player.getY(), 4, 4};
-    // SDL_FillRect(gScreenSurface, &mid, 0x00ff0000);
-    // SDL_Rect mid2{Player.getX() + 60 / 2, Player.getY() + 96 / 2, 4, 4};
-    // SDL_FillRect(gScreenSurface, &mid2, 0x00ff0000);
-    // for (int i = 0; i < platformX.size(); i++)
-    // {
-    //     mid2.x = platformX[i];
-    //     mid2.y = platformY[i];
-    //     SDL_FillRect(gScreenSurface, &mid2, 0x00ff0000);
-    //     mid2.x = platformX[i] + tileSize;
-    //     mid2.y = platformY[i] + tileSize;
-    //     SDL_FillRect(gScreenSurface, &mid2, 0x00ff0000);
-    // }
 }
 
 void renderImage(double x, double y, string name)
@@ -1052,7 +1038,7 @@ void renderImage(double x, double y, string name)
         images[name]->format->Amask);
     SDL_FillRect(pScaleSurface, &size, SDL_MapRGBA(pScaleSurface->format, 0, 0, 0, 0));
     SDL_BlitScaled(images[name], NULL, pScaleSurface, NULL);
-    SDL_BlitSurface(pScaleSurface, NULL, gScreenSurface, &pos);
+    SDL_BlitSurface(pScaleSurface, NULL, screen, &pos);
 
     SDL_FreeSurface(pScaleSurface);
     pScaleSurface = nullptr;
