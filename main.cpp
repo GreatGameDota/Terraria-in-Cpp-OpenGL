@@ -25,6 +25,7 @@ map<string, SDL_Surface *> images;
 
 void InitialWorldGen();
 void RenderAll();
+void AddCustomTiles();
 bool rendering = false;
 vector<int> Ground;
 vector<int> Background;
@@ -49,7 +50,7 @@ int worldYOffset = 0;
 vector<double> platformX;
 vector<double> platformY;
 vector<int> customTileY;
-vector<int> customTileXScroll;
+vector<int> customTileScrollX;
 vector<int> customTile;
 int screens = 31;
 bool initialGen = false;
@@ -62,15 +63,7 @@ void CenterMiddle();
 void GenSurfaceAtScaledX(int x);
 string CheckNeighbors(int x, int y, string type);
 string CheckForEmptyTile(int idx, string type);
-void MoveWorldUpBy(int offset);
-void MoveWorldDownBy(int offset);
-void MoveWorldLeftBy(int offset);
-void MoveWorldRightBy(int offset);
 void RegenEntireWorld();
-void MoveYIndex(int y, int idx);
-void MoveXIndex(int x, int idx);
-void RegenYAtIndex(int idx);
-void RegenXAtIndex(int idx);
 template <typename T>
 string toStringHelper(T n)
 {
@@ -91,13 +84,23 @@ vector<int> oldRandomImageG;
 vector<int> oldRandomImageB;
 
 Player Player{width, height, tileSize};
-void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey, bool space);
+void RenderPlayer();
 void ClearPlayer();
 void RerenderAroundPlayer();
 
 double previousTime;
 double currentTime = 0;
 double elapsedTime;
+
+bool arrowUp = false;
+bool arrowLeft = false;
+bool arrowRight = false;
+bool wKey = false;
+bool aKey = false;
+bool dKey = false;
+bool space = false;
+
+vector<int> torches;
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -234,6 +237,7 @@ void InitialWorldGen()
 
 void RenderAll()
 {
+    AddCustomTiles();
     rendering = true;
     platformX.clear();
     platformY.clear();
@@ -495,10 +499,8 @@ void CenterMiddle()
     int idx = ceil(amountX / 2);
     if (Ground[idx] > 1)
     {
-        // MoveWorldDownBy(amountY);
         worldYOffset -= amountY + 2;
         RegenEntireWorld();
-        // cout << "down" << amountY + 2 << endl;
         CenterMiddle();
     }
     else
@@ -518,26 +520,20 @@ void CenterMiddle()
         {
             if (i > amountY)
             {
-                // MoveWorldUpBy(amountY);
                 worldYOffset += amountY - 2;
                 RegenEntireWorld();
-                // cout << "up" << amountY - 2 << endl;
                 CenterMiddle();
             }
             else if (i > center)
             {
-                // MoveWorldUpBy(i - center);
                 worldYOffset += i - center;
                 RegenEntireWorld();
-                // cout << "up" << i - center << endl;
                 CenterMiddle();
             }
             else
             {
-                // MoveWorldDownBy(center - i);
                 worldYOffset -= center - i;
                 RegenEntireWorld();
-                // cout << "down" << center - i << endl;
                 CenterMiddle();
             }
         }
@@ -546,104 +542,6 @@ void CenterMiddle()
     {
         RenderAll();
     }
-}
-
-void MoveWorldUpBy(int offset)
-{
-    worldYOffset += offset;
-    if (offset > amountY - 1 && initialGen)
-    {
-        RegenEntireWorld();
-        // CenterMiddle();
-    }
-    else
-    {
-        int scroll_i = offset + 1;
-        while (!(scroll_i >= amountY))
-        {
-            MoveYIndex(scroll_i, scroll_i - offset);
-            scroll_i++;
-        }
-        scroll_i = amountY;
-        for (int i = 0; i < offset; i++)
-        {
-            RegenXAtIndex(scroll_i);
-            scroll_i--;
-        }
-        RenderSurface();
-        if (!initialGen)
-        {
-            RenderAll();
-        }
-    }
-}
-
-void MoveWorldDownBy(int offset)
-{
-    worldYOffset -= offset;
-    if (offset > amountY - 1 && initialGen)
-    {
-        RegenEntireWorld();
-        // CenterMiddle();
-    }
-    else
-    {
-        int scroll_i = amountY - offset;
-        while (!(scroll_i <= -1))
-        {
-            MoveYIndex(scroll_i, scroll_i + offset);
-            scroll_i--;
-        }
-        scroll_i = 0;
-        for (int i = 0; i < offset; i++)
-        {
-            RegenXAtIndex(scroll_i);
-            scroll_i++;
-        }
-        RenderSurface();
-        if (!initialGen)
-        {
-            RenderAll();
-        }
-    }
-}
-
-void MoveWorldLeftBy(int offset)
-{
-    worldXOffset += offset;
-    int scroll_i = amountX - offset;
-    while (!(scroll_i <= 0)) // MAY NEED TO BE -1
-    {
-        MoveXIndex(scroll_i, scroll_i + offset);
-        scroll_i--;
-    }
-    scroll_i = 0;
-    for (int i = 0; i < offset; i++)
-    {
-        RegenXAtIndex(scroll_i);
-        scroll_i++;
-    }
-    RenderSurface();
-    RenderAll();
-}
-
-void MoveWorldRightBy(int offset)
-{
-    worldXOffset -= offset;
-    int scroll_i = offset + 1;
-    while (!(scroll_i >= amountX + 1))
-    {
-        MoveXIndex(scroll_i, scroll_i - offset);
-        scroll_i++;
-    }
-    scroll_i = amountX;
-    for (int i = 0; i < offset; i++)
-    {
-        RegenXAtIndex(scroll_i);
-        scroll_i--;
-    }
-    RenderSurface();
-    RenderAll();
 }
 
 void RegenEntireWorld()
@@ -657,69 +555,15 @@ void RegenEntireWorld()
     RenderSurface();
     if (!initialGen)
     {
-        RenderAll();
-    }
-}
-
-void MoveYIndex(int y, int idx)
-{
-    int idx2 = y * amountX;
-    for (int i = 0; i < amountX; i++)
-    {
-        Ground[idx2 + ((idx - y) * amountX)] = Ground[idx2];
-        Background[idx2 + ((idx - y) * amountX)] = Background[idx2];
-        idx2++;
-    }
-}
-
-void MoveXIndex(int x, int idx)
-{
-    int idx2 = x;
-    for (int i = 0; i < amountY; i++)
-    {
-        Ground[idx2 + (idx - x)] = Ground[idx2];
-        Background[idx2 + (idx - x)] = Background[idx2];
-        idx2++;
-    }
-}
-
-void RegenXAtIndex(int idx)
-{
-    gen = 0;
-    feature_size = 100;
-    int idx2 = idx * amountX;
-    for (int i = 0; i < amountX; i++)
-    {
-        GenerateGroundAtIndex(idx2);
-        idx2++;
-    }
-    gen = 1;
-    feature_size = 200;
-    idx2 = idx * amountX;
-    for (int i = 0; i < amountX; i++)
-    {
-        GenerateGroundAtIndex(idx2);
-        idx2++;
-    }
-}
-
-void RegenYAtIndex(int idx)
-{
-    gen = 0;
-    feature_size = 100;
-    int idx2 = idx;
-    for (int i = 0; i < amountY; i++)
-    {
-        GenerateGroundAtIndex(idx2);
-        idx2 += amountX;
-    }
-    gen = 1;
-    feature_size = 200;
-    idx2 = idx;
-    for (int i = 0; i < amountY; i++)
-    {
-        GenerateGroundAtIndex(idx2);
-        idx2 += amountX;
+        oldRandomImageG.clear();
+        oldRandomImageB.clear();
+        int index = 0;
+        for (auto &element : Ground)
+        {
+            todo.push_back(index++);
+            oldRandomImageG.push_back(0);
+            oldRandomImageB.push_back(0);
+        }
     }
 }
 
@@ -810,6 +654,8 @@ int GetIndexFromXY(double x, double y)
 {
     int mouseX = floor(ScaleNum(x, 0, width, 0, amountX));
     int mouseY = round(ScaleNum(y, 0, height, 0, amountY));
+    scaled[0] = mouseX;
+    scaled[1] = mouseY;
     return GetIndexFromScaledXY(mouseX, mouseY);
 }
 
@@ -828,13 +674,6 @@ void Run()
 {
     bool gameLoop = true;
     bool fullScreen = false;
-    bool arrowUp = false;
-    bool arrowLeft = false;
-    bool arrowRight = false;
-    bool wKey = false;
-    bool aKey = false;
-    bool dKey = false;
-    bool space = false;
     while (gameLoop)
     {
         if (mouseDown)
@@ -844,6 +683,32 @@ void Run()
             digBlock(x, y);
             // placeBlock(x, y, 2);
         }
+        int xBorder = 10;
+        int yBorder = 5;
+        if (Player.getX() > width - (amountX / xBorder) * tileSize)
+        {
+            worldXOffset += amountX - 6 - amountX / xBorder;
+            RegenEntireWorld();
+            Player.setX((amountX / xBorder) * tileSize);
+        }
+        if (Player.getX() < (amountX / xBorder) * tileSize)
+        {
+            worldXOffset -= amountX - 6 - amountX / xBorder;
+            RegenEntireWorld();
+            Player.setX(width - (amountX / xBorder) * tileSize);
+        }
+        if (Player.getY() > height - (amountY / yBorder) * tileSize)
+        {
+            worldYOffset += amountY - 10 - amountY / yBorder;
+            RegenEntireWorld();
+            Player.setY((amountY / yBorder) * tileSize);
+        }
+        if (Player.getY() < (amountY / yBorder) * tileSize)
+        {
+            worldYOffset -= amountY - 10 - amountY / yBorder;
+            RegenEntireWorld();
+            Player.setY(height - (amountY / yBorder) * tileSize);
+        }
 
         // previousTime = currentTime;
         // currentTime = finish();
@@ -852,7 +717,7 @@ void Run()
         ClearPlayer();
         RenderAll();
         RerenderAroundPlayer();
-        RenderPlayer(arrowLeft, arrowRight, arrowUp, aKey, dKey, wKey, space);
+        RenderPlayer();
         SDL_UpdateWindowSurface(window);
         // currentTime = finish();
 
@@ -936,6 +801,31 @@ void Run()
     }
 }
 
+void AddCustomTiles()
+{
+    torches.clear();
+    for (int j = 0; j < customTile.size(); j++)
+    {
+        for (int i = 0; i < amountX; i++)
+        {
+            if (i + worldXOffset + ((amountX * screens) / 2 - amountX / 2) == customTileScrollX[j])
+            {
+                GetRealXYFromScaledXY(i, 0);
+                pos[1] = customTileY[j] + (worldYOffset * -1 * tileSize);
+                if (pos[0] > -1 && pos[1] > -1 && pos[0] < width && pos[1] < height)
+                {
+                    int idx = GetIndexFromXY(pos[0], pos[1]);
+                    Ground[idx] = customTile[j];
+                    if (customTile[j] == 6)
+                    {
+                        torches.push_back(idx);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void ClearPlayer()
 {
     SDL_Rect fill{static_cast<int>(Player.getX()), static_cast<int>(Player.getY()), Player.getWidth(), Player.getHeight()};
@@ -972,7 +862,7 @@ void digBlock(int x, int y)
         Rerender(idx);
         GetRealXYFromScaledXY(scaled[0], scaled[1]);
         customTileY.push_back(pos[1] + worldYOffset * tileSize);
-        customTileXScroll.push_back(scaled[0] + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+        customTileScrollX.push_back(scaled[0] + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
         customTile.push_back(0);
     }
 }
@@ -986,7 +876,7 @@ void placeBlock(int x, int y, int type)
         Rerender(idx);
         GetRealXYFromScaledXY(scaled[0], scaled[1]);
         customTileY.push_back(pos[1] + worldYOffset * tileSize);
-        customTileXScroll.push_back(scaled[0] + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+        customTileScrollX.push_back(scaled[0] + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
         customTile.push_back(0);
     }
 }
@@ -1000,7 +890,7 @@ void Rerender(int idx)
     todo.push_back(idx + amountX);
 }
 
-void RenderPlayer(bool arrowLeft, bool arrowRight, bool arrowUp, bool aKey, bool dKey, bool wKey, bool space)
+void RenderPlayer()
 {
     Player.tick(arrowLeft || aKey, arrowRight || dKey, arrowUp || wKey || space, platformX, platformY, elapsedTime);
     SDL_Rect pos;
