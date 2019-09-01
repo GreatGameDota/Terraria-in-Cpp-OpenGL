@@ -71,6 +71,8 @@ string toStringHelper(T n)
     oss << n;
     return oss.str();
 }
+// void itoa(int i, char *s);
+// void set_pixel(SDL_Surface *surface, int x, int y);
 
 int scaled[2];
 double pos[2];
@@ -100,6 +102,7 @@ bool aKey = false;
 bool dKey = false;
 bool space = false;
 
+void RenderBrightness(double brightness, double x, double y, int width, int height);
 vector<int> torches;
 
 SDL_Window *window = nullptr;
@@ -309,6 +312,7 @@ void RenderGroundAtIndex(int idx)
                 }
             }
             renderImage(pos[0], pos[1], name);
+            RenderBrightness(50, pos[0], pos[1], tileSize, tileSize);
         }
         else
         {
@@ -356,6 +360,7 @@ void RenderGroundAtIndex(int idx)
                 platformX.push_back(pos[0]);
                 platformY.push_back(pos[1]);
             }
+            RenderBrightness(50, pos[0], pos[1], tileSize, tileSize);
         }
     }
 }
@@ -916,6 +921,25 @@ void RenderPlayer()
     pScaleSurface = nullptr;
 }
 
+void RenderBrightness(double brightness, double x, double y, int width, int height)
+{
+    SDL_Rect pos;
+    pos.x = x;
+    pos.y = y;
+    SDL_Surface *s = SDL_CreateRGBSurface(0, width, height,
+                                          images["dirt-0000"]->format->BitsPerPixel,
+                                          images["dirt-0000"]->format->Rmask,
+                                          images["dirt-0000"]->format->Gmask,
+                                          images["dirt-0000"]->format->Bmask,
+                                          images["dirt-0000"]->format->Amask);
+    int alpha = round(ScaleNum(brightness, 100, 0, 0, 255));
+    SDL_FillRect(s, NULL, 0x000000 + alpha);
+    SDL_BlitSurface(s, NULL, screen, &pos);
+
+    SDL_FreeSurface(s);
+    s = nullptr;
+}
+
 void renderImage(double x, double y, string name)
 {
     SDL_Rect pos;
@@ -940,6 +964,44 @@ void renderImage(double x, double y, string name)
     SDL_FreeSurface(pScaleSurface);
     pScaleSurface = nullptr;
 }
+
+// void set_pixel(SDL_Surface *surface, int x, int y)
+// {
+//     unsigned int *pixels = static_cast<unsigned int *>(surface->pixels);
+//     char buffer[33];
+//     itoa(pixels[x + y * tileSize], buffer);
+//     string c(buffer);
+//     string r = c.substr(0, 2);
+//     unsigned int rc = stoul(r, nullptr, 16);
+//     string g = c.substr(2, 2);
+//     unsigned int gc = stoul(g, nullptr, 16);
+//     string b = c.substr(4, 2);
+//     unsigned int bc = stoul(b, nullptr, 16);
+//     string a = c.substr(6, 2);
+//     unsigned int ac = stoul(a, nullptr, 16);
+//     // cout << rc << " " << gc << " " << bc << " " << ac << endl;
+
+//     if (ac == 0)
+//     {
+//         return;
+//     }
+//     double brightness = 1;
+//     string full = "";
+//     itoa(rc * brightness, buffer);
+//     full += buffer;
+//     itoa(gc * brightness, buffer);
+//     full += buffer;
+//     itoa(bc * brightness, buffer);
+//     full += buffer;
+//     full += "ff";
+//     unsigned int color = stoul(full, nullptr, 16);
+//     pixels[x + y * tileSize] = color;
+// }
+
+// void itoa(int i, char *s)
+// {
+//     sprintf(s, "%x", i);
+// }
 
 void loadSurface(string path)
 {

@@ -39,10 +39,7 @@ public:
   void RespawnPlayer();
   void tick(bool left, bool right, bool jump, vector<double> platformX, vector<double> platformY, double time);
 
-  double getX() const
-  {
-    return x;
-  }
+  double getX() const { return x; }
   void setX(int newX) { x = newX; }
   double getY() const { return y; }
   void setY(int newY) { y = newY; }
