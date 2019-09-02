@@ -704,7 +704,7 @@ void CastLight()
             lightVal -= 3;
             if (tile > 0 && tile < 6 || background != 3)
             {
-                lightVal -= 12;
+                lightVal -= 13;
             }
             GetScaledXYFromIndex(idx);
             SpreadLight(scaled[0] + 1, scaled[1] + 0, lightVal);
@@ -713,7 +713,7 @@ void CastLight()
             SpreadLight(scaled[0] + 0, scaled[1] + -1, lightVal);
             if (tile == 0 && background < 3)
             {
-                lightVal -= 1.5;
+                lightVal += 12;
             }
             else
             {
@@ -773,7 +773,7 @@ void AddLightSource(int idx, double value)
 
 double GetBrightness(int tile, int idx)
 {
-    double brightness = light[idx];
+    double brightness = light[idx] - 25;
     if (brightness < -95)
     {
         brightness = -100;
@@ -1004,6 +1004,11 @@ void Rerender(int idx)
     todo.push_back(idx + 1);
     todo.push_back(idx - amountX);
     todo.push_back(idx + amountX);
+    nextLight.push_back(idx);
+    nextLight.push_back(idx - 1);
+    nextLight.push_back(idx + 1);
+    nextLight.push_back(idx - amountX);
+    nextLight.push_back(idx + amountX);
 }
 
 void RenderPlayer()
