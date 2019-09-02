@@ -12,6 +12,7 @@
 #include <cmath>
 #include <sstream>
 #include <cstdio>
+#include <deque>
 
 using namespace std;
 

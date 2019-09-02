@@ -31,7 +31,6 @@ vector<int> Ground;
 vector<int> Background;
 string groundNames[] = {"blank", "grass", "dirt", "stone", "flora", "wood", "torch", "tree", "tree-b-left", "tree-b-right", "tree-b-both", "tree-branch-right", "tree-branch-left", "tree-r-left", "tree-r-right", "tree-r-both", "tree-root-right", "tree-root-left"};
 string backgroundNames[] = {"dirt-wall", "stone-wall", "wood-wall", "sky"};
-vector<double> Light;
 void RenderGroundAtIndex(int idx);
 void GetScaledXYFromIndex(int idx);
 int GetIndexFromScaledXY(int x, int y);
@@ -102,8 +101,18 @@ bool aKey = false;
 bool dKey = false;
 bool space = false;
 
+vector<double> light;
+deque<double> nextLight;
+vector<int> SunLight;
+void CastLight();
+void SpreadLight(int x, int y, double lightVal);
+void CastSunlight();
+void AddLightSource(int idx, double value);
 void RenderBrightness(double brightness, double x, double y, int width, int height);
+double GetBrightness(int tile, int idx);
 vector<int> torches;
+double lightSourceValue = 25;
+double torchLightValue = 50;
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -225,6 +234,7 @@ void InitialWorldGen()
         todo.push_back(i);
         oldRandomImageG.push_back(0);
         oldRandomImageB.push_back(0);
+        light.push_back(-100);
     }
     gen = 0;
     feature_size = 100;
@@ -240,6 +250,10 @@ void InitialWorldGen()
 
 void RenderAll()
 {
+    if (todo.size() >= amountX * amountY)
+    {
+        CastSunlight();
+    }
     AddCustomTiles();
     rendering = true;
     platformX.clear();
@@ -312,7 +326,7 @@ void RenderGroundAtIndex(int idx)
                 }
             }
             renderImage(pos[0], pos[1], name);
-            RenderBrightness(50, pos[0], pos[1], tileSize, tileSize);
+            RenderBrightness(GetBrightness(Background[idx], idx), pos[0], pos[1], tileSize, tileSize);
         }
         else
         {
@@ -360,7 +374,7 @@ void RenderGroundAtIndex(int idx)
                 platformX.push_back(pos[0]);
                 platformY.push_back(pos[1]);
             }
-            RenderBrightness(50, pos[0], pos[1], tileSize, tileSize);
+            RenderBrightness(GetBrightness(Ground[idx], idx), pos[0], pos[1], tileSize, tileSize);
         }
     }
 }
@@ -439,6 +453,7 @@ void GenerateSurface()
 
 void RenderSurface()
 {
+    SunLight.clear();
     for (int i = 0; i < amountX; i++)
     {
         GenSurfaceAtScaledX(i);
@@ -473,18 +488,17 @@ void GenSurfaceAtScaledX(int x)
             Background[idx2] = 3;
             idx2 += amountX;
         }
-        //Sunlight stuff
+        SunLight.push_back(idx2);
         if (Ground[idx2] > 99 && !(idx2 > amountX * amountY))
         {
             Ground[idx2] = Ground[idx2] - 100;
-            //Sunlight
         }
         idx2 += amountX;
         if (Ground[idx2] == 0 && !(idx2 > amountX * amountY))
         {
             Ground[idx2 - amountX] = 0;
             Background[idx2 - amountX] = 3;
-            //Sunlight
+            SunLight[SunLight.size() - 1] = idx2;
         }
         else
         {
@@ -493,7 +507,7 @@ void GenSurfaceAtScaledX(int x)
             {
                 Ground[idx2 - 2 * amountX] = 0;
                 Background[idx2 - 2 * amountX] = 3;
-                //Sunlight
+                SunLight[SunLight.size() - 1] = idx;
             }
         }
     }
@@ -675,6 +689,102 @@ double ScaleNum(double n, double minN, double maxN, double min, double max)
     return (((n - minN) / (maxN - minN)) * (max - min)) + min;
 }
 
+void CastLight()
+{
+    int i = 0;
+    while (!(nextLight.size() < 1 || i > 200))
+    {
+        int idx = nextLight[1];
+        nextLight.pop_front();
+        int tile = Ground[idx];
+        double lightVal = light[idx];
+        int background = Background[idx];
+        if (tile != -1)
+        {
+            lightVal -= 3;
+            if (tile > 0 && tile < 6 || background != 3)
+            {
+                lightVal -= 12;
+            }
+            GetScaledXYFromIndex(idx);
+            SpreadLight(scaled[0] + 1, scaled[1] + 0, lightVal);
+            SpreadLight(scaled[0] + 0, scaled[1] + 1, lightVal);
+            SpreadLight(scaled[0] + -1, scaled[1] + 0, lightVal);
+            SpreadLight(scaled[0] + 0, scaled[1] + -1, lightVal);
+            if (tile == 0 && background < 3)
+            {
+                lightVal -= 1.5;
+            }
+            else
+            {
+                lightVal -= 10;
+            }
+            SpreadLight(scaled[0] + 1, scaled[1] + 1, lightVal);
+            SpreadLight(scaled[0] + -1, scaled[1] + -1, lightVal);
+            SpreadLight(scaled[0] + -1, scaled[1] + 1, lightVal);
+            SpreadLight(scaled[0] + 1, scaled[1] + -1, lightVal);
+        }
+        if ((tile != 0 || background != 3) && lightVal > -85)
+        {
+            RenderGroundAtIndex(idx);
+        }
+        i++;
+    }
+}
+
+void SpreadLight(int x, int y, double lightVal)
+{
+    int idx = GetIndexFromScaledXY(x, y);
+    if (lightVal > light[idx] && lightVal > -85)
+    {
+        if (x > -1 && x < amountX && y > -1 && y < amountY)
+        {
+            light[idx] = lightVal;
+            nextLight.push_back(idx);
+        }
+    }
+}
+
+void CastSunlight()
+{
+    for (int i = 0; i < amountX * amountY; i++)
+    {
+        light[i] = -100;
+    }
+    nextLight.clear();
+    for (int i = 0; i < SunLight.size(); i++)
+    {
+        AddLightSource(SunLight[i] - amountX, lightSourceValue);
+    }
+    for (int i = 0; i < torches.size(); i++)
+    {
+        AddLightSource(torches[i], torchLightValue);
+    }
+}
+
+void AddLightSource(int idx, double value)
+{
+    if (light[idx] != value)
+    {
+        light[idx] = value;
+        nextLight.push_back(idx);
+    }
+}
+
+double GetBrightness(int tile, int idx)
+{
+    double brightness = light[idx];
+    if (brightness < -95)
+    {
+        brightness = -100;
+    }
+    if (brightness > 0)
+    {
+        brightness = 0;
+    }
+    return ScaleNum(brightness, -100, 0, 0, 100);
+}
+
 void Run()
 {
     bool gameLoop = true;
@@ -719,6 +829,7 @@ void Run()
         // currentTime = finish();
         // startTimer();
         // elapsedTime = currentTime - previousTime;
+        CastLight();
         ClearPlayer();
         RenderAll();
         RerenderAroundPlayer();
