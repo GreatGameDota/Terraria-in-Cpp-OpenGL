@@ -737,7 +737,7 @@ void SpreadLight(int x, int y, double lightVal)
     int idx = GetIndexFromScaledXY(x, y);
     if (lightVal > light[idx] && lightVal > -85)
     {
-        if (x > -1 && x < amountX && y > -1 && y < amountY)
+        if (x > -1 && x < amountX && y > -1 && y < amountY - 1)
         {
             light[idx] = lightVal;
             nextLight.push_back(idx);
