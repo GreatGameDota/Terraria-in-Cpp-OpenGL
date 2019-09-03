@@ -250,11 +250,11 @@ void InitialWorldGen()
 
 void RenderAll()
 {
+    AddCustomTiles();
     if (todo.size() >= amountX * amountY)
     {
         CastSunlight();
     }
-    AddCustomTiles();
     rendering = true;
     platformX.clear();
     platformY.clear();
@@ -264,9 +264,6 @@ void RenderAll()
     }
     todo.clear();
     rendering = false;
-    // GetRealXYFromScaledXY(ceil(amountX / 2), ceil(amountY / 2));
-    // SDL_Rect mid{static_cast<int>(pos[0]), static_cast<int>(pos[1]), tileSize, tileSize};
-    // SDL_FillRect(screen, &mid, 0xff000000);
 }
 
 void RenderGroundAtIndex(int idx)
@@ -737,7 +734,7 @@ void SpreadLight(int x, int y, double lightVal)
     int idx = GetIndexFromScaledXY(x, y);
     if (lightVal > light[idx] && lightVal > -85)
     {
-        if (x > -1 && x < amountX && y > -1 && y < amountY - 1)
+        if (x > -1 && x < amountX && y > -1 && y < amountY)
         {
             light[idx] = lightVal;
             nextLight.push_back(idx);
