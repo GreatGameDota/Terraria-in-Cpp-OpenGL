@@ -70,8 +70,6 @@ string toStringHelper(T n)
     oss << n;
     return oss.str();
 }
-// void itoa(int i, char *s);
-// void set_pixel(SDL_Surface *surface, int x, int y);
 
 int scaled[2];
 double pos[2];
@@ -79,6 +77,7 @@ double pos[2];
 bool mouseDown = false;
 void digBlock(int x, int y);
 void placeBlock(int x, int y, int type);
+void placeTorch(int x, int y);
 void Rerender(int idx);
 vector<int> todo;
 vector<int> oldRandomImageG;
@@ -350,7 +349,7 @@ void RenderGroundAtIndex(int idx)
                     name += toStringHelper(randTile);
                 }
             }
-            if (Ground[idx] == 5)
+            if (Ground[idx] == 6)
             {
                 name = "torch";
             }
@@ -629,7 +628,7 @@ string CheckForEmptyTile(int idx, string type)
 {
     if (type == "ground")
     {
-        if (Ground[idx] == 0 || Ground[idx] == 7)
+        if (Ground[idx] == 0 || Ground[idx] >= 6)
         {
             return "0";
         }
@@ -792,8 +791,9 @@ void Run()
         {
             int x, y;
             SDL_GetMouseState(&x, &y);
-            digBlock(x, y);
+            // digBlock(x, y);
             // placeBlock(x, y, 2);
+            placeTorch(x, y);
         }
         int xBorder = 10;
         int yBorder = 5;
@@ -994,6 +994,20 @@ void placeBlock(int x, int y, int type)
     }
 }
 
+void placeTorch(int x, int y)
+{
+    int idx = GetIndexFromXY(x, y);
+    if (Ground[idx] == 0 && (Background[idx] != 3 || (Ground[idx + amountX] != 0 && Ground[idx + amountX] < 6)))
+    {
+        Ground[idx] = 6;
+        GetRealXYFromScaledXY(scaled[0], scaled[1]);
+        customTileY.push_back(pos[1] + worldYOffset * tileSize);
+        customTileScrollX.push_back(scaled[0] + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+        customTile.push_back(6);
+        AddLightSource(idx, torchLightValue);
+    }
+}
+
 void Rerender(int idx)
 {
     todo.push_back(idx);
@@ -1077,44 +1091,6 @@ void renderImage(double x, double y, string name)
     SDL_FreeSurface(pScaleSurface);
     pScaleSurface = nullptr;
 }
-
-// void set_pixel(SDL_Surface *surface, int x, int y)
-// {
-//     unsigned int *pixels = static_cast<unsigned int *>(surface->pixels);
-//     char buffer[33];
-//     itoa(pixels[x + y * tileSize], buffer);
-//     string c(buffer);
-//     string r = c.substr(0, 2);
-//     unsigned int rc = stoul(r, nullptr, 16);
-//     string g = c.substr(2, 2);
-//     unsigned int gc = stoul(g, nullptr, 16);
-//     string b = c.substr(4, 2);
-//     unsigned int bc = stoul(b, nullptr, 16);
-//     string a = c.substr(6, 2);
-//     unsigned int ac = stoul(a, nullptr, 16);
-//     // cout << rc << " " << gc << " " << bc << " " << ac << endl;
-
-//     if (ac == 0)
-//     {
-//         return;
-//     }
-//     double brightness = 1;
-//     string full = "";
-//     itoa(rc * brightness, buffer);
-//     full += buffer;
-//     itoa(gc * brightness, buffer);
-//     full += buffer;
-//     itoa(bc * brightness, buffer);
-//     full += buffer;
-//     full += "ff";
-//     unsigned int color = stoul(full, nullptr, 16);
-//     pixels[x + y * tileSize] = color;
-// }
-
-// void itoa(int i, char *s)
-// {
-//     sprintf(s, "%x", i);
-// }
 
 void loadSurface(string path)
 {
