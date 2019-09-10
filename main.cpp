@@ -29,7 +29,7 @@ void AddCustomTiles();
 bool rendering = false;
 vector<int> Ground;
 vector<int> Background;
-string groundNames[] = {"blank", "grass", "dirt", "stone", "flora", "wood", "torch", "tree", "tree-b-left", "tree-b-right", "tree-b-both", "tree-branch-right", "tree-branch-left", "tree-r-left", "tree-r-right", "tree-r-both", "tree-root-right", "tree-root-left"};
+string groundNames[] = {"blank", "grass", "dirt", "stone", "flora", "wood", "torch", "tree", "tree-b-left", "tree-b-right", "tree-b-both", "tree-branch-right", "tree-branch-left", "tree-r-left", "tree-r-right", "tree-r-both", "tree-root-right", "tree-root-left", "tree-top-1"};
 string backgroundNames[] = {"dirt-wall", "stone-wall", "wood-wall", "sky"};
 void RenderGroundAtIndex(int idx);
 void GetScaledXYFromIndex(int idx);
@@ -112,6 +112,8 @@ double GetBrightness(int tile, int idx);
 vector<int> torches;
 double lightSourceValue = 25;
 double torchLightValue = 50;
+
+void GenerateTreeAtXY(int x, int y);
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -341,7 +343,7 @@ void RenderGroundAtIndex(int idx)
                     name += toStringHelper(randTile);
                 }
             }
-            if (Ground[idx] == 1 || Ground[idx] == 3 || Ground[idx] == 6)
+            if (Ground[idx] == 1 || Ground[idx] == 3 || Ground[idx] == 5)
             {
                 if (shape == "xx0x")
                 {
@@ -352,6 +354,20 @@ void RenderGroundAtIndex(int idx)
             if (Ground[idx] == 6)
             {
                 name = "torch";
+            }
+            if (Ground[idx] > 6 && Ground[idx] < 19)
+            {
+                renderImage(pos[0], pos[1], "sky");
+                if (Ground[idx] > 7)
+                {
+                    name = groundNames[Ground[idx]];
+                }
+                else
+                {
+                    name = "tree-";
+                    randTile = rand() % 3 + 3;
+                    name += toStringHelper(randTile);
+                }
             }
             if (oldRandomImageG[idx] != name.back() - '0' && name.back() != '0' && name.back() != 'x' && oldRandomImageG[idx] != 0)
             {
@@ -365,12 +381,15 @@ void RenderGroundAtIndex(int idx)
                 }
             }
             renderImage(pos[0], pos[1], name);
-            if (shape != "xxxx" && Ground[idx] != 6 && Ground[idx] != 0)
+            if (shape != "xxxx" && Ground[idx] < 6 && Ground[idx] != 0)
             {
                 platformX.push_back(pos[0]);
                 platformY.push_back(pos[1]);
             }
-            RenderBrightness(GetBrightness(Ground[idx], idx), pos[0], pos[1], tileSize, tileSize);
+            if (Ground[idx] < 7)
+            {
+                RenderBrightness(GetBrightness(Ground[idx], idx), pos[0], pos[1], tileSize, tileSize);
+            }
         }
     }
 }
@@ -444,7 +463,104 @@ void GenerateSurface()
     }
     RenderSurface();
     CenterMiddle();
-    cout << worldYOffset << endl;
+    // for (int i = 3; i < amountX * screens - 3; i += 3)
+    // {
+    //     int y = surface[i];
+    //     if (surface[i - 1] == y && surface[i + 1] == y)
+    //     {
+
+    //     }
+    // }
+    // GetRealXYFromScaledXY(ceil(amountX / 2), ceil(amountY / 2));
+    // customTileY.push_back(pos[1] + worldYOffset * tileSize);
+    // customTileScrollX.push_back(ceil(amountX / 2) + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+    // customTile.push_back(17);
+    double r = static_cast<double>(rand()) / RAND_MAX;
+    if (r > 0)
+    {
+        GenerateTreeAtXY(ceil(amountX / 2), ceil(amountY / 2) - 1);
+    }
+}
+
+void GenerateTreeAtXY(int x, int y)
+{
+    GetRealXYFromScaledXY(x, y);
+    customTileY.push_back(pos[1] - tileSize + worldYOffset * tileSize);
+    customTileScrollX.push_back(x + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+    int rootNum = rand() % 4;
+    if (rootNum == 0)
+    {
+        customTile.push_back(7);
+    }
+    else if (rootNum == 1)
+    {
+        customTile.push_back(13);
+        customTileY.push_back(pos[1] - tileSize + worldYOffset * tileSize);
+        customTileScrollX.push_back(x - 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+        customTile.push_back(17);
+    }
+    else if (rootNum == 2)
+    {
+        customTile.push_back(15);
+        customTileY.push_back(pos[1] - tileSize + worldYOffset * tileSize);
+        customTileScrollX.push_back(x - 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+        customTile.push_back(17);
+        customTileY.push_back(pos[1] - tileSize + worldYOffset * tileSize);
+        customTileScrollX.push_back(x + 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+        customTile.push_back(16);
+    }
+    else if (rootNum == 3)
+    {
+        customTile.push_back(14);
+        customTileY.push_back(pos[1] - tileSize + worldYOffset * tileSize);
+        customTileScrollX.push_back(x + 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+        customTile.push_back(16);
+    }
+    int treeHeight = rand() % (15 - 5 + 1) + 5;
+    for (int i = 0; i < treeHeight; i++)
+    {
+        customTileY.push_back(pos[1] - (tileSize * (i + 1)) - tileSize + worldYOffset * tileSize);
+        customTileScrollX.push_back(x + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+        if (rand() % 11 > 8 && i < treeHeight - 1)
+        {
+            int branchType = rand() % 3 + 1;
+            if (branchType == 1)
+            {
+                customTile.push_back(8);
+                customTileY.push_back(pos[1] - (tileSize * (i + 1)) - tileSize + worldYOffset * tileSize);
+                customTileScrollX.push_back(x - 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+                customTile.push_back(12);
+            }
+            else if (branchType == 2)
+            {
+                customTile.push_back(9);
+                customTileY.push_back(pos[1] - (tileSize * (i + 1)) - tileSize + worldYOffset * tileSize);
+                customTileScrollX.push_back(x + 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+                customTile.push_back(11);
+            }
+            else if (branchType == 3)
+            {
+                customTile.push_back(10);
+                customTileY.push_back(pos[1] - (tileSize * (i + 1)) - tileSize + worldYOffset * tileSize);
+                customTileScrollX.push_back(x - 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+                customTile.push_back(12);
+                customTileY.push_back(pos[1] - (tileSize * (i + 1)) - tileSize + worldYOffset * tileSize);
+                customTileScrollX.push_back(x + 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
+                customTile.push_back(11);
+            }
+        }
+        else
+        {
+            if (i == treeHeight - 1)
+            {
+                customTile.push_back(18);
+            }
+            else
+            {
+                customTile.push_back(7);
+            }
+        }
+    }
 }
 
 void RenderSurface()
@@ -503,7 +619,7 @@ void GenSurfaceAtScaledX(int x)
             {
                 Ground[idx2 - 2 * amountX] = 0;
                 Background[idx2 - 2 * amountX] = 3;
-                SunLight[SunLight.size() - 1] = idx;
+                SunLight[SunLight.size() - 1] = idx2;
             }
         }
     }
