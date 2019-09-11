@@ -1,4 +1,4 @@
-<img src='https://github.com/GreatGameDota/Terraria-in-Cpp-OpenGL/blob/master/github/image.png?raw=true' alt='preview' title='preview'>
+<img src='https://github.com/GreatGameDota/Terraria-in-Cpp-OpenGL/blob/master/github/image2.png?raw=true' alt='preview' title='preview'>
 
 # Terraria in C++ and OpenGL
 
@@ -14,6 +14,7 @@
 - Dynamic lighting
 - Caverns to explore
 - Digging and placing of tiles/torches
+- Beautiful green Trees
 
 #### Links
 

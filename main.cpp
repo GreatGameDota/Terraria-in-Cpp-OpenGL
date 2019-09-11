@@ -525,7 +525,7 @@ void GenerateSurface()
             double r = static_cast<double>(rand()) / RAND_MAX;
             if (r > 0.7)
             {
-                GenerateTreeAtXY(i, y);
+                GenerateTreeAtXY(i, y - tileSize);
             }
         }
     }
@@ -534,7 +534,7 @@ void GenerateSurface()
 
 void GenerateTreeAtXY(int x, int y)
 {
-    customTileY.push_back(y - tileSize);
+    customTileY.push_back(y);
     customTileScrollX.push_back(x);
     int rootNum = rand() % 4;
     if (rootNum == 0)
@@ -544,31 +544,31 @@ void GenerateTreeAtXY(int x, int y)
     else if (rootNum == 1)
     {
         customTile.push_back(13);
-        customTileY.push_back(y - tileSize);
+        customTileY.push_back(y);
         customTileScrollX.push_back(x - 1);
         customTile.push_back(17);
     }
     else if (rootNum == 2)
     {
         customTile.push_back(15);
-        customTileY.push_back(y - tileSize);
+        customTileY.push_back(y);
         customTileScrollX.push_back(x - 1);
         customTile.push_back(17);
-        customTileY.push_back(y - tileSize);
+        customTileY.push_back(y);
         customTileScrollX.push_back(x + 1);
         customTile.push_back(16);
     }
     else if (rootNum == 3)
     {
         customTile.push_back(14);
-        customTileY.push_back(y - tileSize);
+        customTileY.push_back(y);
         customTileScrollX.push_back(x + 1);
         customTile.push_back(16);
     }
     int treeHeight = rand() % (15 - 5 + 1) + 5;
     for (int i = 0; i < treeHeight; i++)
     {
-        customTileY.push_back(y - (tileSize * (i + 1)) - tileSize);
+        customTileY.push_back(y - (tileSize * (i + 1)));
         customTileScrollX.push_back(x);
         if (rand() % 11 > 6 && i < treeHeight - 1)
         {
@@ -576,7 +576,7 @@ void GenerateTreeAtXY(int x, int y)
             if (branchType == 1)
             {
                 customTile.push_back(8);
-                customTileY.push_back(y - (tileSize * (i + 1)) - tileSize);
+                customTileY.push_back(y - (tileSize * (i + 1)));
                 customTileScrollX.push_back(x - 1);
                 if (rand() % 3 + 1 == 3)
                 {
@@ -590,7 +590,7 @@ void GenerateTreeAtXY(int x, int y)
             else if (branchType == 2)
             {
                 customTile.push_back(9);
-                customTileY.push_back(y - (tileSize * (i + 1)) - tileSize);
+                customTileY.push_back(y - (tileSize * (i + 1)));
                 customTileScrollX.push_back(x + 1);
                 if (rand() % 3 + 1 == 3)
                 {
@@ -604,7 +604,7 @@ void GenerateTreeAtXY(int x, int y)
             else if (branchType == 3)
             {
                 customTile.push_back(10);
-                customTileY.push_back(y - (tileSize * (i + 1)) - tileSize);
+                customTileY.push_back(y - (tileSize * (i + 1)));
                 customTileScrollX.push_back(x - 1);
                 if (rand() % 3 + 1 == 3)
                 {
@@ -614,7 +614,7 @@ void GenerateTreeAtXY(int x, int y)
                 {
                     customTile.push_back(rand() % 3 + 20);
                 }
-                customTileY.push_back(y - (tileSize * (i + 1)) - tileSize);
+                customTileY.push_back(y - (tileSize * (i + 1)));
                 customTileScrollX.push_back(x + 1);
                 if (rand() % 3 + 1 == 3)
                 {

@@ -61,7 +61,7 @@
                     "*.cpp",
                     "util/*.cpp",
                     "-o",
-                    "Builds/Win_Build/engine",
+                    "Builds/Win_Build/Terraria OpenGL",
                     "-LDependencies/bin",
                     "-LBuilds/Win_Build",
                     "-lmingw32",
