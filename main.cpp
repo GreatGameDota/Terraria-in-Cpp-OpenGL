@@ -29,7 +29,34 @@ void AddCustomTiles();
 bool rendering = false;
 vector<int> Ground;
 vector<int> Background;
-string groundNames[] = {"blank", "grass", "dirt", "stone", "flora", "wood", "torch", "tree", "tree-b-left", "tree-b-right", "tree-b-both", "tree-branch-right", "tree-branch-left", "tree-r-left", "tree-r-right", "tree-r-both", "tree-root-right", "tree-root-left", "tree-top-1"};
+string groundNames[] = {
+    "blank",
+    "grass",
+    "dirt",
+    "stone",
+    "flora",
+    "wood",
+    "torch",
+    "tree",
+    "tree-b-left",
+    "tree-b-right",
+    "tree-b-both",
+    "tree-branch-right",
+    "tree-branch-left",
+    "tree-r-left",
+    "tree-r-right",
+    "tree-r-both",
+    "tree-root-right",
+    "tree-root-left",
+    "tree-top-1",
+    "tree-top",
+    "tree-left-1",
+    "tree-left-2",
+    "tree-left-3",
+    "tree-right-1",
+    "tree-right-2",
+    "tree-right-3",
+};
 string backgroundNames[] = {"dirt-wall", "stone-wall", "wood-wall", "sky"};
 void RenderGroundAtIndex(int idx);
 void GetScaledXYFromIndex(int idx);
@@ -114,6 +141,8 @@ double lightSourceValue = 25;
 double torchLightValue = 50;
 
 void GenerateTreeAtXY(int x, int y);
+void RenderObject(double x, double y, int width, int height, string name, int offsetX, int offsetY);
+void RenderObjects();
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -355,7 +384,7 @@ void RenderGroundAtIndex(int idx)
             {
                 name = "torch";
             }
-            if (Ground[idx] > 6 && Ground[idx] < 19)
+            if (Ground[idx] > 6 && Ground[idx] < 26)
             {
                 renderImage(pos[0], pos[1], "sky");
                 if (Ground[idx] > 7)
@@ -380,7 +409,10 @@ void RenderGroundAtIndex(int idx)
                     oldRandomImageG[idx] = name.back() - '0';
                 }
             }
-            renderImage(pos[0], pos[1], name);
+            if (Ground[idx] < 18 || Ground[idx] > 25)
+            {
+                renderImage(pos[0], pos[1], name);
+            }
             if (shape != "xxxx" && Ground[idx] < 6 && Ground[idx] != 0)
             {
                 platformX.push_back(pos[0]);
@@ -389,6 +421,23 @@ void RenderGroundAtIndex(int idx)
             if (Ground[idx] < 7)
             {
                 RenderBrightness(GetBrightness(Ground[idx], idx), pos[0], pos[1], tileSize, tileSize);
+            }
+        }
+    }
+}
+
+void RenderObjects()
+{
+    for (int i = 0; i < Ground.size(); i++)
+    {
+        if (Ground[i] > 17 && Ground[i] < 26)
+        {
+            GetScaledXYFromIndex(i);
+            GetRealXYFromScaledXY(scaled[0], scaled[1]);
+            if (pos[0] > -1 && pos[1] > -1 && pos[0] < width && pos[1] < height)
+            {
+                string name = groundNames[Ground[i]];
+                RenderObject(pos[0], pos[1], 80, 80, name, 32, 64);
             }
         }
     }
@@ -553,7 +602,7 @@ void GenerateTreeAtXY(int x, int y)
         {
             if (i == treeHeight - 1)
             {
-                customTile.push_back(18);
+                customTile.push_back(19);
             }
             else
             {
@@ -946,6 +995,7 @@ void Run()
         ClearPlayer();
         RenderAll();
         RerenderAroundPlayer();
+        RenderObjects();
         RenderPlayer();
         SDL_UpdateWindowSurface(window);
         // currentTime = finish();
@@ -1208,6 +1258,31 @@ void renderImage(double x, double y, string name)
     pScaleSurface = nullptr;
 }
 
+void RenderObject(double x, double y, int width, int height, string name, int offsetX, int offsetY)
+{
+    SDL_Rect pos;
+    pos.x = x - offsetX;
+    pos.y = y - offsetY;
+    SDL_Rect size;
+    size.w = width;
+    size.h = height;
+    SDL_Surface *pScaleSurface = SDL_CreateRGBSurface(
+        images[name]->flags,
+        size.w,
+        size.h,
+        images[name]->format->BitsPerPixel,
+        images[name]->format->Rmask,
+        images[name]->format->Gmask,
+        images[name]->format->Bmask,
+        images[name]->format->Amask);
+    SDL_FillRect(pScaleSurface, &size, SDL_MapRGBA(pScaleSurface->format, 0, 0, 0, 0));
+    SDL_BlitScaled(images[name], NULL, pScaleSurface, NULL);
+    SDL_BlitSurface(pScaleSurface, NULL, screen, &pos);
+
+    SDL_FreeSurface(pScaleSurface);
+    pScaleSurface = nullptr;
+}
+
 void loadSurface(string path)
 {
     SDL_Surface *optimizedSurface = nullptr;
@@ -1342,7 +1417,14 @@ bool loadAllImages()
         loadSurface("images/tree-root-left.png");
         loadSurface("images/tree-root-right.png");
         loadSurface("images/tree-top-1.png");
-        loadSurface("images/tree-top-2.png");
+        // loadSurface("images/tree-top-2.png");
+        loadSurface("images/tree-top.png");
+        loadSurface("images/tree-left-1.png");
+        loadSurface("images/tree-left-2.png");
+        loadSurface("images/tree-left-3.png");
+        loadSurface("images/tree-right-1.png");
+        loadSurface("images/tree-right-2.png");
+        loadSurface("images/tree-right-3.png");
         loadSurface("images/wood-0000.png");
         loadSurface("images/wood-000x.png");
         loadSurface("images/wood-00x0.png");
