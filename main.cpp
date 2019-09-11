@@ -47,15 +47,15 @@ string groundNames[] = {
     "tree-r-right",
     "tree-r-both",
     "tree-root-right",
-    "tree-root-left",
-    "tree-top-1",
-    "tree-top",
-    "tree-left-1",
-    "tree-left-2",
-    "tree-left-3",
-    "tree-right-1",
-    "tree-right-2",
-    "tree-right-3",
+    "tree-root-left", // 17
+    "tree-top-1",     // 18
+    "tree-top",       // 19
+    "tree-left-1",    // 20
+    "tree-left-2",    // 21
+    "tree-left-3",    // 22
+    "tree-right-1",   // 23
+    "tree-right-2",   // 24
+    "tree-right-3",   // 25
 };
 string backgroundNames[] = {"dirt-wall", "stone-wall", "wood-wall", "sky"};
 void RenderGroundAtIndex(int idx);
@@ -143,6 +143,10 @@ double torchLightValue = 50;
 void GenerateTreeAtXY(int x, int y);
 void RenderObject(double x, double y, int width, int height, string name, int offsetX, int offsetY);
 void RenderObjects();
+vector<double> ObjectWidth{80, 30, 32, 26, 30, 34, 34};
+vector<double> ObjectHeight{80, 28, 24, 28, 28, 28, 24};
+vector<int> ObjectOffsetX{32, 14, 16, 10, 0, 0, 0};
+vector<int> ObjectOffsetY{64, 12, -2, 7, 14, 12, -2};
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -430,14 +434,15 @@ void RenderObjects()
 {
     for (int i = 0; i < Ground.size(); i++)
     {
-        if (Ground[i] > 17 && Ground[i] < 26)
+        if (Ground[i] > 18 && Ground[i] < 26)
         {
             GetScaledXYFromIndex(i);
             GetRealXYFromScaledXY(scaled[0], scaled[1]);
             if (pos[0] > -1 && pos[1] > -1 && pos[0] < width && pos[1] < height)
             {
                 string name = groundNames[Ground[i]];
-                RenderObject(pos[0], pos[1], 80, 80, name, 32, 64);
+                int objectNum = Ground[i] - 19;
+                RenderObject(pos[0], pos[1], ObjectWidth[objectNum], ObjectHeight[objectNum], name, ObjectOffsetX[objectNum], ObjectOffsetY[objectNum]);
             }
         }
     }
@@ -520,10 +525,6 @@ void GenerateSurface()
 
     //     }
     // }
-    // GetRealXYFromScaledXY(ceil(amountX / 2), ceil(amountY / 2));
-    // customTileY.push_back(pos[1] + worldYOffset * tileSize);
-    // customTileScrollX.push_back(ceil(amountX / 2) + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
-    // customTile.push_back(17);
     double r = static_cast<double>(rand()) / RAND_MAX;
     if (r > 0)
     {
@@ -578,24 +579,52 @@ void GenerateTreeAtXY(int x, int y)
                 customTile.push_back(8);
                 customTileY.push_back(pos[1] - (tileSize * (i + 1)) - tileSize + worldYOffset * tileSize);
                 customTileScrollX.push_back(x - 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
-                customTile.push_back(12);
+                if (rand() % 3 + 1 == 3)
+                {
+                    customTile.push_back(12);
+                }
+                else
+                {
+                    customTile.push_back(rand() % 3 + 20);
+                }
             }
             else if (branchType == 2)
             {
                 customTile.push_back(9);
                 customTileY.push_back(pos[1] - (tileSize * (i + 1)) - tileSize + worldYOffset * tileSize);
                 customTileScrollX.push_back(x + 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
-                customTile.push_back(11);
+                if (rand() % 3 + 1 == 3)
+                {
+                    customTile.push_back(11);
+                }
+                else
+                {
+                    customTile.push_back(rand() % 3 + 23);
+                }
             }
             else if (branchType == 3)
             {
                 customTile.push_back(10);
                 customTileY.push_back(pos[1] - (tileSize * (i + 1)) - tileSize + worldYOffset * tileSize);
                 customTileScrollX.push_back(x - 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
-                customTile.push_back(12);
+                if (rand() % 3 + 1 == 3)
+                {
+                    customTile.push_back(12);
+                }
+                else
+                {
+                    customTile.push_back(rand() % 3 + 20);
+                }
                 customTileY.push_back(pos[1] - (tileSize * (i + 1)) - tileSize + worldYOffset * tileSize);
                 customTileScrollX.push_back(x + 1 + worldXOffset + ((amountX * screens) / 2 - amountX / 2));
-                customTile.push_back(11);
+                if (rand() % 3 + 1 == 3)
+                {
+                    customTile.push_back(11);
+                }
+                else
+                {
+                    customTile.push_back(rand() % 3 + 23);
+                }
             }
         }
         else
