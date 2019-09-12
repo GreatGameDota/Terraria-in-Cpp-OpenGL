@@ -440,7 +440,25 @@ void RenderObjects()
 {
     for (int i = 0; i < Ground.size(); i++)
     {
-        if (Ground[i] > 18 && Ground[i] < 26)
+        if (Ground[i] > 19 && Ground[i] < 26)
+        {
+            GetScaledXYFromIndex(i);
+            GetRealXYFromScaledXY(scaled[0], scaled[1]);
+            if (pos[0] > -1 && pos[1] > -1 && pos[0] < width && pos[1] < height)
+            {
+                string name = groundNames[Ground[i]];
+                int objectNum = Ground[i] - 19;
+                if (reRender || TwoDDist(Player.getX() + Player.getWidth() / 2, Player.getY() + Player.getHeight() / 2, pos[0] - ObjectOffsetX[objectNum] + ObjectWidth[objectNum] / 2, pos[1] - ObjectOffsetY[objectNum] + ObjectHeight[objectNum] / 2) < 100)
+                {
+                    renderImage(pos[0], pos[1], "sky");
+                    RenderObject(pos[0], pos[1], ObjectWidth[objectNum], ObjectHeight[objectNum], name, ObjectOffsetX[objectNum], ObjectOffsetY[objectNum]);
+                }
+            }
+        }
+    }
+    for (int i = 0; i < Ground.size(); i++)
+    {
+        if (Ground[i] == 19)
         {
             GetScaledXYFromIndex(i);
             GetRealXYFromScaledXY(scaled[0], scaled[1]);
@@ -580,7 +598,7 @@ void GenerateTreeAtXY(int x, int y)
     {
         customTileY.push_back(y - (tileSize * (i + 1)));
         customTileScrollX.push_back(x);
-        if (rand() % 11 > 7 && i < treeHeight - 1 && i % 2 == 0)
+        if (rand() % 11 > 7 && i < treeHeight - 1 && i % 2 == 0 && i != 0)
         {
             int branchType = rand() % 3 + 1;
             if (branchType == 1)
