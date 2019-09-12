@@ -56,7 +56,7 @@ string groundNames[] = {
     "tree-right-1",   // 23
     "tree-right-2",   // 24
     "tree-right-3",   // 25
-};
+    "grass-corner"};
 string backgroundNames[] = {"dirt-wall", "stone-wall", "wood-wall", "sky"};
 void RenderGroundAtIndex(int idx);
 void GetScaledXYFromIndex(int idx);
@@ -368,7 +368,7 @@ void RenderGroundAtIndex(int idx)
             string name = "";
             string shape = CheckNeighbors(scaled[0], scaled[1], "ground");
             name = groundNames[Ground[idx]] + "-" + shape;
-            if (Ground[idx] == 2 || Ground[idx] == 3 || Ground[idx] == 5)
+            if (Ground[idx] == 2 || Ground[idx] == 3 || Ground[idx] == 5 || Ground[idx] == 1)
             {
                 if (shape == "xxxx")
                 {
@@ -1397,7 +1397,13 @@ bool loadAllImages()
         loadSurface("images/grass-xx0x2.png");
         loadSurface("images/grass-xx0x3.png");
         loadSurface("images/grass-xxx0.png");
-        loadSurface("images/grass-xxxx.png");
+        loadSurface("images/grass-xxxx1.png");
+        loadSurface("images/grass-xxxx2.png");
+        loadSurface("images/grass-xxxx3.png");
+        loadSurface("images/grass-corner-0x0x.png");
+        loadSurface("images/grass-corner-0xx0.png");
+        loadSurface("images/grass-corner-x00x.png");
+        loadSurface("images/grass-corner-x0x0.png");
         loadSurface("images/sky.png");
         loadSurface("images/stone-0000.png");
         loadSurface("images/stone-000x.png");

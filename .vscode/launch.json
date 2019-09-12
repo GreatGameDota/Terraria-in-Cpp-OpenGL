@@ -26,7 +26,7 @@
                 "MIMode": "lldb"
             },
             "windows": {
-                "program": "${workspaceRoot}/Builds/Win_Build/engine",
+                "program": "${workspaceRoot}/Builds/Win_Build/Terraria OpenGL",
                 "miDebuggerPath": "C:\\MinGw\\bin\\gdb.exe"
             }
         }
