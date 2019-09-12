@@ -147,6 +147,9 @@ vector<double> ObjectWidth{80, 30, 32, 26, 30, 34, 34};
 vector<double> ObjectHeight{80, 28, 24, 28, 28, 28, 24};
 vector<int> ObjectOffsetX{32, 14, 16, 10, 0, 0, 0};
 vector<int> ObjectOffsetY{64, 12, -2, 7, 14, 12, -2};
+bool initialLoop = false;
+bool reRender = false;
+double TwoDDist(double x1, double y1, double x2, double y2);
 
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
@@ -361,7 +364,10 @@ void RenderGroundAtIndex(int idx)
         }
         else
         {
-            renderImage(pos[0], pos[1], "sky");
+            if (Ground[idx] < 19 || Ground[idx] > 25)
+            {
+                renderImage(pos[0], pos[1], "sky");
+            }
         }
         if (Ground[idx] != 0)
         {
@@ -388,7 +394,7 @@ void RenderGroundAtIndex(int idx)
             {
                 name = "torch";
             }
-            if (Ground[idx] > 6 && Ground[idx] < 26)
+            if (Ground[idx] > 6 && Ground[idx] < 19)
             {
                 renderImage(pos[0], pos[1], "sky");
                 if (Ground[idx] > 7)
@@ -413,7 +419,7 @@ void RenderGroundAtIndex(int idx)
                     oldRandomImageG[idx] = name.back() - '0';
                 }
             }
-            if (Ground[idx] < 18 || Ground[idx] > 25)
+            if (Ground[idx] < 19 || Ground[idx] > 25)
             {
                 renderImage(pos[0], pos[1], name);
             }
@@ -442,7 +448,11 @@ void RenderObjects()
             {
                 string name = groundNames[Ground[i]];
                 int objectNum = Ground[i] - 19;
-                RenderObject(pos[0], pos[1], ObjectWidth[objectNum], ObjectHeight[objectNum], name, ObjectOffsetX[objectNum], ObjectOffsetY[objectNum]);
+                if (reRender || TwoDDist(Player.getX() + Player.getWidth() / 2, Player.getY() + Player.getHeight() / 2, pos[0] - ObjectOffsetX[objectNum] + ObjectWidth[objectNum] / 2, pos[1] - ObjectOffsetY[objectNum] + ObjectHeight[objectNum] / 2) < 100)
+                {
+                    renderImage(pos[0], pos[1], "sky");
+                    RenderObject(pos[0], pos[1], ObjectWidth[objectNum], ObjectHeight[objectNum], name, ObjectOffsetX[objectNum], ObjectOffsetY[objectNum]);
+                }
             }
         }
     }
@@ -570,7 +580,7 @@ void GenerateTreeAtXY(int x, int y)
     {
         customTileY.push_back(y - (tileSize * (i + 1)));
         customTileScrollX.push_back(x);
-        if (rand() % 11 > 6 && i < treeHeight - 1)
+        if (rand() % 11 > 7 && i < treeHeight - 1 && i % 2 == 0)
         {
             int branchType = rand() % 3 + 1;
             if (branchType == 1)
@@ -878,6 +888,11 @@ double ScaleNum(double n, double minN, double maxN, double min, double max)
     return (((n - minN) / (maxN - minN)) * (max - min)) + min;
 }
 
+double TwoDDist(double x1, double y1, double x2, double y2)
+{
+    return sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)));
+}
+
 void CastLight()
 {
     int i = 0;
@@ -976,6 +991,8 @@ double GetBrightness(int tile, int idx)
 
 void Run()
 {
+    initialLoop = true;
+    reRender = false;
     bool gameLoop = true;
     bool fullScreen = false;
     while (gameLoop)
@@ -1019,6 +1036,7 @@ void Run()
         // currentTime = finish();
         // startTimer();
         // elapsedTime = currentTime - previousTime;
+        reRender = todo.size() >= amountX * amountY;
         CastLight();
         ClearPlayer();
         RenderAll();
@@ -1027,6 +1045,8 @@ void Run()
         RenderPlayer();
         SDL_UpdateWindowSurface(window);
         // currentTime = finish();
+
+        initialLoop = false;
 
         SDL_Event event;
         while (SDL_PollEvent(&event))
