@@ -151,6 +151,13 @@ bool initialLoop = false;
 bool reRender = false;
 double TwoDDist(double x1, double y1, double x2, double y2);
 
+void printToScreen(int x, int y, unsigned char r, unsigned char g, unsigned char b, char *str);
+TTF_Font *Font;
+int FPS = 0;
+const string VERSION = "v0.8.1 (Alpha)";
+void DisplayText();
+char *toCharArray(int number, char *numberArray);
+
 SDL_Window *window = nullptr;
 SDL_GLContext glContext;
 // unsigned int WindowFlags;
@@ -199,12 +206,14 @@ bool init()
         }
         SDL_Log("Window Successful Generated");
     }
+    TTF_Init();
+    Font = TTF_OpenFont("Fonts/Andy Bold.ttf", 18);
     //Map OpenGL Context to Window
     glContext = SDL_GL_CreateContext(window);
     return true;
 }
 
-int WinMain()
+int main()
 {
     //Error Checking/Initialisation
     if (!init())
@@ -258,6 +267,7 @@ void CleanUp()
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
     IMG_Quit();
+    TTF_Quit();
     SDL_Quit();
 }
 
@@ -1054,6 +1064,7 @@ void Run()
         // currentTime = finish();
         // startTimer();
         // elapsedTime = currentTime - previousTime;
+
         reRender = todo.size() >= amountX * amountY;
         CastLight();
         ClearPlayer();
@@ -1061,7 +1072,9 @@ void Run()
         RerenderAroundPlayer();
         RenderObjects();
         RenderPlayer();
+        DisplayText();
         SDL_UpdateWindowSurface(window);
+
         // currentTime = finish();
 
         initialLoop = false;
@@ -1171,6 +1184,20 @@ void AddCustomTiles()
     }
 }
 
+void DisplayText()
+{
+    string s = toStringHelper(FPS) + " fps";
+    char *pw1 = new char[30];
+    strcpy(pw1, s.c_str());
+    printToScreen(5, 0, 255, 255, 255, pw1);
+    delete[] pw1;
+
+    char *pw2 = new char[30];
+    strcpy(pw2, VERSION.c_str());
+    printToScreen(width / 2, 0, 255, 255, 255, pw2);
+    delete[] pw2;
+}
+
 void ClearPlayer()
 {
     SDL_Rect fill{static_cast<int>(Player.getX()), static_cast<int>(Player.getY()), Player.getWidth(), Player.getHeight()};
@@ -1278,6 +1305,19 @@ void RenderPlayer()
 
     SDL_FreeSurface(pScaleSurface);
     pScaleSurface = nullptr;
+}
+
+void printToScreen(int x, int y, unsigned char r, unsigned char g, unsigned char b, char *str)
+{
+    SDL_Rect pos;
+    pos.x = x;
+    pos.y = y;
+    SDL_Color color = {r, g, b};
+    SDL_Surface *surfaceMessage = TTF_RenderText_Solid(Font, str, color);
+    SDL_BlitSurface(surfaceMessage, NULL, screen, &pos);
+
+    SDL_FreeSurface(surfaceMessage);
+    surfaceMessage = nullptr;
 }
 
 void RenderBrightness(double brightness, double x, double y, int width, int height)
