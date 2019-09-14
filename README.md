@@ -1,8 +1,14 @@
 <img src='https://github.com/GreatGameDota/Terraria-in-Cpp-OpenGL/blob/master/github/image3.png?raw=true' alt='preview' title='preview'>
 
-# Terraria in C++ and OpenGL
+<div style='text-align: center'>
+
+<img src='https://github.com/GreatGameDota/Terraria-in-Cpp-OpenGL/blob/master/github/Logo.png?raw=true' alt='logo' title='logo'>
+
+# in C++ and OpenGL
 
 ## [Download the Game!](https://github.com/GreatGameDota/Terraria-in-Cpp-OpenGL/raw/master/github/game.zip)
+
+</div>
 
 ## Originally created on [Scratch](https://scratch.mit.edu/projects/324086463/)
 
