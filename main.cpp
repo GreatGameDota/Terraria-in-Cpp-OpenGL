@@ -1026,8 +1026,8 @@ void Run()
     int loopAmount = 0;
     int frames = 0;
     double accum = 0;
-    double updateInterval = 0.5;
-    double timeLeft = 0.5;
+    double updateInterval = 10;
+    double timeLeft = 10;
     while (gameLoop)
     {
         if (mouseDown)
@@ -1075,10 +1075,7 @@ void Run()
 
         if (timeLeft <= 0.0)
         {
-            if (loopAmount % 10 == 0)
-            {
-                FPS = accum / frames;
-            }
+            FPS = accum / frames;
             timeLeft = updateInterval;
             accum = 0.0;
             frames = 0;
