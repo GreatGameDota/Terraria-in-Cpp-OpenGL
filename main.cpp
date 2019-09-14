@@ -1023,6 +1023,11 @@ void Run()
     reRender = false;
     bool gameLoop = true;
     bool fullScreen = false;
+    int loopAmount = 0;
+    int frames = 0;
+    double accum = 0;
+    double updateInterval = 0.5;
+    double timeLeft = 0.5;
     while (gameLoop)
     {
         if (mouseDown)
@@ -1060,10 +1065,24 @@ void Run()
             Player.setY(height - (amountY / yBorder) * tileSize);
         }
 
-        // previousTime = currentTime;
-        // currentTime = finish();
-        // startTimer();
-        // elapsedTime = currentTime - previousTime;
+        previousTime = currentTime;
+        currentTime = finish();
+        startTimer();
+        elapsedTime = currentTime - previousTime;
+        timeLeft -= elapsedTime;
+        accum += 1 / elapsedTime;
+        frames++;
+
+        if (timeLeft <= 0.0)
+        {
+            if (loopAmount % 10 == 0)
+            {
+                FPS = accum / frames;
+            }
+            timeLeft = updateInterval;
+            accum = 0.0;
+            frames = 0;
+        }
 
         reRender = todo.size() >= amountX * amountY;
         CastLight();
@@ -1075,9 +1094,10 @@ void Run()
         DisplayText();
         SDL_UpdateWindowSurface(window);
 
-        // currentTime = finish();
+        currentTime = finish();
 
         initialLoop = false;
+        loopAmount++;
 
         SDL_Event event;
         while (SDL_PollEvent(&event))
@@ -1189,13 +1209,21 @@ void DisplayText()
     string s = toStringHelper(FPS) + " fps";
     char *pw1 = new char[30];
     strcpy(pw1, s.c_str());
-    printToScreen(5, 0, 255, 255, 255, pw1);
+    printToScreen(5, height - 18, 255, 255, 255, pw1);
     delete[] pw1;
 
     char *pw2 = new char[30];
     strcpy(pw2, VERSION.c_str());
     printToScreen(width / 2, 0, 255, 255, 255, pw2);
     delete[] pw2;
+
+    todo.push_back(GetIndexFromScaledXY(0, amountY - 1));
+    todo.push_back(GetIndexFromScaledXY(0, amountY - 1) + 1);
+    todo.push_back(GetIndexFromScaledXY(0, amountY - 1) + 2);
+    if (FPS > 99)
+    {
+        todo.push_back(GetIndexFromScaledXY(0, amountY - 1) + 3);
+    }
 }
 
 void ClearPlayer()
@@ -1310,10 +1338,17 @@ void RenderPlayer()
 void printToScreen(int x, int y, unsigned char r, unsigned char g, unsigned char b, char *str)
 {
     SDL_Rect pos;
-    pos.x = x;
     pos.y = y;
     SDL_Color color = {r, g, b};
     SDL_Surface *surfaceMessage = TTF_RenderText_Solid(Font, str, color);
+    if (x > 10)
+    {
+        pos.x = x - surfaceMessage->w / 2;
+    }
+    else
+    {
+        pos.x = x;
+    }
     SDL_BlitSurface(surfaceMessage, NULL, screen, &pos);
 
     SDL_FreeSurface(surfaceMessage);
